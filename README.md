@@ -1,1 +1,1 @@
-# SocialMediaSurveyOnEarthquackInWenchuan
+# SocialMediaSurveyOnEarthquakeInWenchuan
