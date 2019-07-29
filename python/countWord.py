@@ -5,7 +5,7 @@ now = 0
 words = []
 words_count = {}
 
-with open("../../dataWenchuan/worddata.json", encoding='utf-8') as file:
+with open("../../dataWenchuan/set2019.dat", encoding='utf-8') as file:
     try:
         while True:
             str = file.readline()
@@ -23,11 +23,13 @@ with open("../../dataWenchuan/worddata.json", encoding='utf-8') as file:
                     words_count[each] += 1
                     pass
                 pass
-            fout = open("../../dataWenchuan/wordcount.json", 'w', encoding='utf-8')
+            fout = open("../../dataWenchuan/result2019.dat", 'w', encoding='utf-8')
             for each in words_count:
-                fout.write('"["{}",{}],"'.format(each, words_count[each]))
+                if words_count[each] < 1000:
+                    continue
+                fout.write('{},{}\n'.format(each, words_count[each]))
                 now += 1
-                print(now/1000000)
+                print('{},{}\t\t\t{}\n'.format(each, words_count[each], now/len(words)))
                 pass
             pass
         pass

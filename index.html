@@ -3,15 +3,25 @@
 <head>
     <meta charset='utf-8' />
     <title>汶川地震微博数据分析系统</title>
-    <link href="./stylesheets/bootstrap.min.css" rel="stylesheets" />
     <link href="./stylesheets/style.css" rel="stylesheet" />
 </head>
 <body>
-    <div id="header" class="row">  
+    <div id="header" class="row page"></div>
+    <div id="container1" class="row">
+        <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-stand">
+            <div class="left cloneable"></div>
+        </div>
+        <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-stand">
+            <div class="center cloneable"></div>
+        </div>
+        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-stand">
+            <div id="cloud" class="right cloneable"></div>
+        </div>
     </div>
     <script type="text/javascript" src="./javascripts/jquery.min.js"></script>
+    <script type="text/javascript" src="./javascripts/d3.js"></script>
+    <script type="text/javascript" src="./javascripts/d3.layout.cloud.js"></script>
     <script type="text/javascript" src="./javascripts/box.js"></script>
     <script type="text/javascript" src="./javascripts/host.js"></script>
-    <script type="text/typescript" src="./javascripts/host.ts"></script>
 </body>
 </html>

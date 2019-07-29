@@ -4,8 +4,8 @@
 #include<vector>
 using namespace std;
 
-string syntax[] = {"转发", "回复：", "转载", "\"", "⚠️", "🐯", "❗", "🐣", "🙏", "🥤", "💗", "👇", "🍞", "🔘", "😂", "🍃", "🎉", 
-	"📳", "♒", "♎", "💮", "🚗", "🍊", "💔", "🏃", "💥"};
+string syntax[] = {"??", "???", "??", "\"", "??", "??", "?", "??", "??", "??", "??", "??", "??", "??", "??", "??", "??",
+	"??", "?", "?", "??", "??", "??", "??", "??", "??"};
 
 string filt(const string& str) {
 	string str_new = str;
@@ -25,13 +25,13 @@ string getcomments(const string& str) {
 	index = str.find("O");
 	if (index!=-1)
 		str_new = str_new.substr(0, index);
-	index = str.find("[转帖]");
+	index = str.find("[??]");
 	if (index!=-1)
 		str_new = str_new.substr(0, index);
 	return filt(str_new);
 }
 
-string getcontent(const string& str, string* list) {
+string getcontent(const string& str, string* list) try {
 	string str_new = "";
 	istringstream iss(str);
     int flag = 0;
@@ -39,6 +39,8 @@ string getcontent(const string& str, string* list) {
 
     while (getline(iss, temp, ',')) {
         flag++;
+		if (flag>20)
+			return "";
 		if (flag==5) {
 			str_new = getcomments(temp);
 			list[flag-1] = str_new;
@@ -49,6 +51,8 @@ string getcontent(const string& str, string* list) {
     }
 
 	return str_new;
+} catch (...) {
+	return "";
 }
 
 class Tweet {
@@ -116,6 +120,9 @@ public:
 			+ "\",\"mediapiclist\":\"" + this->mediapiclist + "\",\"mediaarticle\":\"" + this->mediaarticle
 			+ "\",\"mediamusic\":\"" + this->mediamusic + "\",\"mediavideo\":\"" + this->mediavideo + "\"}";
 	}
+	string content() {
+		return this->Content;
+	}
 };
 
 int main() {
@@ -136,7 +143,7 @@ int main() {
 		string list[20];
 		str = getcontent(str, list);
 		if (!str.empty() && str.length() >= 4) {
-			cout << str << endl;
+			cout << list[0] << " ";
 			year = list[5].substr(0, 4);
 			int flag = -1;
 			for (vector< vector<Tweet> >::iterator it = all.begin(); it < all.end(); it++) {
@@ -163,21 +170,28 @@ int main() {
 	now = -1;
 
 	ofstream fout;
-	fout.open("../../dataWenchuan/Tweets.json");
-	fout << "[";
+	fout.open("../../dataWenchuan/word2009.dat");
+	// fout << "[";
 	for (vector< vector<Tweet> >::iterator it = all.begin(); it < all.end(); it++) {
-		fout << "{\"year\":\"" << (*it)[0].year() << "\",\"data\":[";
+		if (((*it)[0].year()).compare("2009") != 0)
+			continue;
+		// fout << "{\"year\":\"" << (*it)[0].year() << "\",\"data\":[";
+		// for (vector<Tweet>::iterator i = (*it).begin(); i < (*it).end(); i++) {
+		// 	fout << (*i).print();
+		// 	if (i != (*it).end() - 1)
+		// 		fout << ",";
+		// }
+		// fout << "]";
+		// if (it < all.end() - 1)
+		// 	fout << "," << endl;
+		// cout << ++now << endl;
 		for (vector<Tweet>::iterator i = (*it).begin(); i < (*it).end(); i++) {
-			fout << (*i).print();
+			fout << (*i).content();
 			if (i != (*it).end() - 1)
-				fout << ",";
+				fout << endl;
 		}
-		fout << "]";
-		if (it < all.end() - 1)
-			fout << "," << endl;
-		cout << ++now << endl;
 	}
-	fout << "]" << endl;
+	// fout << "]" << endl;
 	fout.close();
 
     return 0;
