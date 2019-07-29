@@ -1,0 +1,11 @@
+body {
+    height: 846px;
+    background: #ddd;
+}
+
+
+#header {
+    height: 28.2px;
+    background: #eee;
+    border: 1px solid black;
+}
