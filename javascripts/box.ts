@@ -2,7 +2,7 @@
  * @Author: Antoine YANG 
  * @Date: 2019-07-25 15:53:54 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-07-29 13:13:12
+ * @Last Modified time: 2019-08-01 22:29:23
  */
 class Box {
     static count: number = 0;
@@ -71,6 +71,7 @@ $(document).ready(() => {
             dy = dy + parseFloat($(this).css('height')) > parseFloat($('body').css('height'))
                 ? parseFloat($('body').css('height')) - parseFloat($(this).css('height')) : dy;
             $(this).addClass('active').removeClass('fixed').attr('_dx_', dx).attr('_dy_', dy);
+            document.body.style.cursor = "move";
         });
     $('body div:last').append('<button></button>');
     $('body div:last button:last').attr('type', 'button')
@@ -106,7 +107,8 @@ $(document).ready(() => {
             $('.parentbox').remove();
             Box.count = 0;
         });
-    $('body').mouseup(() => {
+    $('body').mouseup(function () {
+            this.style.cursor = "auto";
             if (Box.ready) {
                 Box.ready = false;
                 $('div.ready').append($('.cloning').clone(true));
@@ -127,6 +129,7 @@ $(document).ready(() => {
                     let dx: number = event.pageX - parseFloat($(this).css('left'));
                     let dy: number = event.pageY - parseFloat($(this).css('top'));
                     $(this).addClass('active').removeClass('fixed').attr('_dx_', dx).attr('_dy_', dy);
+                    document.body.style.cursor = "move";
                 })
                 .mouseover(function (event) {
                     let dx: number = event.pageX - parseFloat($(this).css('left'));
@@ -160,6 +163,46 @@ $(document).ready(() => {
             if (y + parseFloat($('div:active').css('height')) > parseFloat($('body').css('height')))
                 return;
             $('div.active').css('top', `${y}px`).css('left', `${x}px`);
+        })
+        $('body').mouseup(function () {
+            this.style.cursor = "auto";
+            if (Box.ready) {
+                Box.ready = false;
+                $('div.ready').append($('.cloning').clone(true));
+                $('div.ready').css('width', 'auto').css('height', 'auto').css("opacity", 0.8);
+                $('.cloning').removeClass('cloning').addClass('still');
+                $('div.ready').unbind();
+                $('div.ready').children().unbind();
+                $('div.ready').mouseover(function () {
+                    $(this).css('opacity', 1.0);
+                })
+                .mouseout(function () {
+                    $(this).css('opacity', 0.8);
+                })
+                .dblclick(function () {
+                    $(this).remove();
+                })
+                .mousedown(function (event) {
+                    let dx: number = event.pageX - parseFloat($(this).css('left'));
+                    let dy: number = event.pageY - parseFloat($(this).css('top'));
+                    $(this).addClass('active').removeClass('fixed').attr('_dx_', dx).attr('_dy_', dy);
+                    document.body.style.cursor = "move";
+                })
+                .mouseover(function (event) {
+                    let dx: number = event.pageX - parseFloat($(this).css('left'));
+                    let dy: number = event.pageY - parseFloat($(this).css('top'));
+                    if (!Box.ready || dx < parseFloat($('body').css('margin-left')) || dx > parseFloat($(this).css('width')) ||
+                        dy < parseFloat($('body').css('margin-top')) || dy > parseFloat($(this).css('height')))
+                        return;
+                    $(this).addClass('ready').css('background', '#bbbbbb88');
+                })
+                .mouseout(function () {
+                    if ($(this).hasClass('ready'))
+                        $(this).removeClass('ready').css('background', '#44444488');
+                });
+                $('div.ready').removeClass('ready').css('background', '#44444488');
+            }
+            $('div.active').addClass('fixed').removeClass('active');
         });
     $('.cloneable').addClass('still')
         .css('-webkit-user-select', 'none')
@@ -170,5 +213,6 @@ $(document).ready(() => {
         .mousedown(function () {
             Box.ready = true;
             $(this).removeClass('still').addClass('cloning');
+            document.body.style.cursor = "move";
         });
 });
