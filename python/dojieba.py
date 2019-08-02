@@ -5,8 +5,8 @@ stopwords = ["现在", "嘿嘿", "还要", "要", "嗳", "赶早不赶晚", "这
 
 now = 0
 
-with open("../../dataWenchuan/word2012.dat", encoding='utf-8') as file:
-    fout = open("../../dataWenchuan/set2012.dat", 'w', encoding='utf-8')
+with open("../../dataWenchuan/word2015.dat", encoding='utf-8') as file:
+    fout = open("../../dataWenchuan/set2015.dat", 'w', encoding='utf-8')
     try:
         while True:
             test_sent = file.readline()
@@ -19,7 +19,10 @@ with open("../../dataWenchuan/word2012.dat", encoding='utf-8') as file:
                 print(word)
                 pass
             now += 1
-            print(now/1000000)
+            print(now/65677)
+            if now >= 65677:
+                fout.close()
+                exit()
             pass
         pass
     finally:

@@ -170,10 +170,10 @@ int main() {
 	now = -1;
 
 	ofstream fout;
-	fout.open("../../dataWenchuan/word2013.dat");
+	fout.open("../../dataWenchuan/word2017.dat");
 	// fout << "[";
 	for (vector< vector<Tweet> >::iterator it = all.begin(); it < all.end(); it++) {
-		if (((*it)[0].year()).compare("2013") != 0)
+		if (((*it)[0].year()).compare("2017") != 0)
 			continue;
 		// fout << "{\"year\":\"" << (*it)[0].year() << "\",\"data\":[";
 		// for (vector<Tweet>::iterator i = (*it).begin(); i < (*it).end(); i++) {
