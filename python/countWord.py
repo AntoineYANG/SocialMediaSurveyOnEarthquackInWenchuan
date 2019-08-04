@@ -5,9 +5,9 @@ now = 0
 words = []
 words_count = {}
 
-fout = open("../../dataWenchuan/result2015.dat", 'w', encoding='utf-8')
+fout = open("../../dataWenchuan/result2018.dat", 'w', encoding='utf-8')
 
-with open("../../dataWenchuan/set2015.dat", encoding='utf-8') as file:
+with open("../../dataWenchuan/set2018.dat", encoding='utf-8') as file:
     try:
         while True:
             str = file.readline()
@@ -15,7 +15,7 @@ with open("../../dataWenchuan/set2015.dat", encoding='utf-8') as file:
             for each in call:
                 if each.isspace() or each == "[" or each == "]":
                     continue
-                print(each)
+                # print(each)
                 if each not in words:
                     words.append(each)
                     words_count[each] = 1
@@ -25,11 +25,12 @@ with open("../../dataWenchuan/set2015.dat", encoding='utf-8') as file:
                     pass
                 pass
             for each in words_count:
-                if words_count[each] < 3000:
+                if words_count[each] < 1800:
                     continue
-                fout.write('text: "{}", freq: {},\n'.format(each, words_count[each]))
+                # fout.write('text: "{}", freq: {};\n'.format(each, words_count[each]))
                 now += 1
-                print('{},{}\t\t\t{}\n'.format(each, words_count[each], now/len(words)))
+                # print('{},{}\t\t\t{}\n'.format(each, words_count[each], now/len(words)))
+                print('{' + 'text: "{}", freq: {}'.format(each, words_count[each]) + '},')
                 if now >= len(words):
                     fout.close()
                     exit()

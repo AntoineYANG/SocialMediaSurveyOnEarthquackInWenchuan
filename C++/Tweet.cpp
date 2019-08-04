@@ -4,7 +4,7 @@
 #include<vector>
 using namespace std;
 
-string syntax[] = {"??", "???", "??", "\"", "??", "??", "?", "??", "??", "??", "??", "??", "??", "??", "??", "??", "??", 
+string syntax[] = {"??", "???", "??", "\"", "??", "??", "?", "??", "??", "??", "??", "??", "??", "??", "??", "??", "??",  
 	"??", "?", "?", "??", "??", "??", "??", "??", "??"};
 
 string filt(const string& str) {
@@ -154,12 +154,12 @@ int main() {
 			}
 			if (flag==-1) {
 				vector<Tweet> first;
-				first.push_back(*(new Tweet(list[0], list[1], list[2], list[3], list[4], list[5], list[6], list[7], list[8], list[9],
+				first.push_back(*(new Tweet(list[0], list[1], list[2], list[3], list[4], str, list[6], list[7], list[8], list[9],
 					list[10], list[11], list[12], list[13], list[14], list[15], list[16], list[17], list[18], list[19])));
 				all.push_back(first);
 			}
 			else {
-				all[flag].push_back(*(new Tweet(list[0], list[1], list[2], list[3], list[4], list[5], list[6], list[7], list[8], list[9],
+				all[flag].push_back(*(new Tweet(list[0], list[1], list[2], list[3], list[4], str, list[6], list[7], list[8], list[9],
 					list[10], list[11], list[12], list[13], list[14], list[15], list[16], list[17], list[18], list[19])));
 			}
 		}
@@ -170,10 +170,10 @@ int main() {
 	now = -1;
 
 	ofstream fout;
-	fout.open("../../dataWenchuan/word2017.dat");
+	fout.open("../../dataWenchuan/word2018.dat");
 	// fout << "[";
 	for (vector< vector<Tweet> >::iterator it = all.begin(); it < all.end(); it++) {
-		if (((*it)[0].year()).compare("2017") != 0)
+		if (((*it)[0].year()).compare("2018") != 0)
 			continue;
 		// fout << "{\"year\":\"" << (*it)[0].year() << "\",\"data\":[";
 		// for (vector<Tweet>::iterator i = (*it).begin(); i < (*it).end(); i++) {

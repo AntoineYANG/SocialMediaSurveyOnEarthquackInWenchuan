@@ -217,3 +217,8 @@ button {
 #container1 {
     height: 500px;
 }
+
+#container2 {
+    margin-top: 8px;
+    height: 300px;
+}
