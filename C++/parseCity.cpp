@@ -13,7 +13,7 @@ bool parse(const string& str, string* list) try {
     while (getline(iss, temp, ',')) {
         flag++;
 		if (flag>7)
-			return false;
+			break;
 		else {
 			list[flag-1] = temp;
 		}
@@ -155,6 +155,16 @@ int main() {
     string str;
 	string year = "";
 	int now = -1;
+	
+	while (!finfo.eof()) {
+		getline(finfo, str);
+		string list[7];
+		if (!str.empty() && parse(str, list)) {
+			table.push_back(*(new Info(list[0], list[1], list[2], list[3], list[4], list[5], list[6])));
+		}
+	}
+
+    finfo.close();
 
 	while (!fin.eof()) {
 		getline(fin, str);
@@ -162,7 +172,6 @@ int main() {
 		if (!getcontent(str, list))
 			continue;
 		if (!str.empty() && str.length() >= 4) {
-			cout << list[2] << " ";
 			year = list[5].substr(0, 4);
 			int flag = -1;
 			for (vector< vector<Tweet> >::iterator it = all.begin(); it < all.end(); it++) {
@@ -183,16 +192,6 @@ int main() {
 			}
 		}
 	}
-
-	while (!finfo.eof()) {
-		getline(finfo, str);
-		string list[7];
-		if (!str.empty() && parse(str, list)) {
-			table.push_back(*(new Info(list[0], list[1], list[2], list[3], list[4], list[5], list[6])));
-		}
-	}
-
-    fin.close();
 
 	ofstream fout09, fout10, fout11, fout12, fout13, fout14, fout15, fout16, fout17, fout18, fout19;
 	fout09.open("../../dataWenchuan/distribution2009.dat");
@@ -229,18 +228,17 @@ int main() {
 			ptr = &fout17;
 		else if (year.compare("2018")==0)
 			ptr = &fout18;
-		else if (year.compare("2009")==0)
+		else if (year.compare("2019")==0)
 			ptr = &fout19;
 		else
 			continue;
 		for (vector<Tweet>::iterator i = (*it).begin(); i < (*it).end(); i++) {
 			string ID =  (*i).getID();
 			string city = "";
-			*ptr << ">>" << ID << endl;
 			for (vector<Info>::iterator s = table.begin(); s < table.end(); s++) {
 				city = (*s).fix(ID);
-				*ptr << "  <<" << (*s).getID() << endl;
 				if (!city.empty()) {
+					cout << city << " ";
 					*ptr << city;
 					break;
 				}
