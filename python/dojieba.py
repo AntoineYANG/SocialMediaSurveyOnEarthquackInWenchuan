@@ -203,8 +203,8 @@ stopwords = ["迎", "费", "最", "请", "再", "微博", "记得", "天", "人"
 
 now = 0
 
-with open("../../dataWenchuan/word2015.dat", encoding='utf-8') as file:
-    fout = open("../../dataWenchuan/set2015.dat", 'w', encoding='utf-8')
+with open("../../dataWenchuan/word2019.dat", encoding='utf-8') as file:
+    fout = open("../../dataWenchuan/set2019.dat", 'w', encoding='utf-8')
     all_ = file.readlines()
     lines = len(all_)
     for each in all_:

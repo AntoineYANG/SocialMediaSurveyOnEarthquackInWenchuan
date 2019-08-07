@@ -2,7 +2,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.decomposition import LatentDirichletAllocation
 
 df = []
-with open("../../dataWenchuan/set2015.dat", encoding='utf-8') as file:
+with open("../../dataWenchuan/set2018.dat", encoding='utf-8') as file:
     # 文本集
     origin = file.readline().split('/')
     df = [origin[piece] for piece in range(0, len(origin), 1)]
