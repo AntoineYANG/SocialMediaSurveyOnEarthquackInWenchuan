@@ -1,42 +1,38 @@
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.decomposition import LatentDirichletAllocation
+from gensim import corpora, models
 
-for year in range(2009, 2020):
-    with open("../../dataWenchuan/set" + str(year) + ".dat", encoding='utf-8') as file:
-        # 文本集
-        origin = file.readline().split('/')
-        df = [origin[piece] for piece in range(0, len(origin), 1)]
-
-        # 创建词袋矩阵作为 LDA 的输入
-        count = CountVectorizer(    # stop_words='chinese',   # 使用内置的停用词库
-                                max_df=.02,          # 单词最大文档频率
-                                    # max_features=5000   # 最常出现的5000个单词
-                                )
-        X = count.fit_transform(df)
-
-        # 评估器
-        n_topics = 8
-        lda = LatentDirichletAllocation(n_components=n_topics,
-                                        random_state=123,
-                                        max_iter=20,
-                                        learning_method='batch')
-        X_topics = lda.fit_transform(X)
-
-        # 显示主题
-        n_top_words = 10
-        feature_names = count.get_feature_names()
-        i = 0
-        for topic_idx, topic in enumerate(lda.components_):
-            print("\n\tTopic %d:" % (topic_idx + 1))
-            print("\t\t_hot words: ",  ", ".join([feature_names[i] for i in topic.argsort()[:-n_top_words - 1:-1]]))
-            theme = X_topics[:, i].argsort()[::-1]
-            print("\t\t_cases:")
-            for iter_idx, tweet_idx in enumerate(theme[:3]):
-                print('\t          {}. '.format(iter_idx + 1),
-                      "/".join([df[n] for n in range(tweet_idx - 5, tweet_idx + 16)]), '...')
-                pass
-            i += 1
+if __name__ == "__main__":
+    texts = []
+    for i in range(2009, 2020):
+        with open("../../../dataWenchuan/set" + str(i) + ".dat", encoding='utf-8') as file:
+            origin = file.readline().split('/')
+            df = [origin[piece] for piece in range(0, len(origin), (int)(len(origin)/99))]
+            print(len(df))
+            texts.append(df)
             pass
         pass
+
+    # 构造词典
+    dictionary = corpora.Dictionary(texts)
+    # 基于词典，使【词】→【稀疏向量】，并将向量放入列表，形成【稀疏向量集】
+    corpus = [dictionary.doc2bow(words) for words in texts]
+
+    # LDA模型，num_topics设置主题的个数
+    lda = models.ldamodel.LdaModel(corpus=corpus, id2word=dictionary, num_topics=10,
+                                   decay=0.5, chunksize=200000)
+
+    # LdaModel(num_terms=19, num_topics=2, decay=0.5, chunksize=2000)
+
+    # 打印所有主题，每个主题显示 num_words 个词
+    for topic in lda.print_topics(num_words=10):
+        print(topic)
+        pass
+
+    year = 2009
+    # 主题推断
+    for e, values in enumerate(lda.inference(corpus)[0]):
+        print(year)
+        year += 1
+        for ee, value in enumerate(values):
+            print('\t主题%d推断值%.2f' % (ee, value))
     pass
 
