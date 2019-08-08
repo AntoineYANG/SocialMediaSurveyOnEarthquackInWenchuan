@@ -2,6 +2,11 @@
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
+    
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -o-user-select: none;
+    user-select: none;
 }
 
 body {
@@ -206,6 +211,18 @@ button {
     height: inherit;
     background: #eee;
     border: 1px solid black;
+}
+
+.title {
+    height: 24px;
+    width: inherit;
+    border-bottom: 1px solid black;
+    background: rgb(245, 245, 245);
+}
+.title p {
+    font-size: larger;
+    margin: auto;
+    padding-left: 30px;
 }
 
 

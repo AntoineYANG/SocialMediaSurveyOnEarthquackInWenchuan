@@ -1,3 +1,9 @@
+/*
+ * @Author: Antoine YANG
+ * @Date: 2019-08-08 15:15:09
+ * @Last Modified by: Antoine YANG
+ * @Last Modified time: 2019-08-08 20:12:53
+ */
 // 全局变量
 {
     var YEAR = 2009;
@@ -5,6 +11,7 @@
     var data_province = {};
     var max_province = 0;
     var columnSet = [];
+    var axis = null;
 }
 // 文件路径
 {
@@ -47,7 +54,7 @@
 // 地图
 (function loadChinaMap() {
     $('#map').append('<img src="../data/map.png">');
-    $('#map img').attr('height', '498px');
+    $('#map img').attr('width', '735px');
     $('#map').append('<svg></svg>');
     $('#map svg').attr('id', 'map_svg').attr('xmlns', 'http://www.w3.org/2000/svg')
         .css('position', 'relative').css('top', '-498px').attr('height', '498px').attr('width', '734px');
@@ -87,10 +94,12 @@
         { x: 562, y: 332, name: "海外" },
         { x: 650, y: 332, name: "其他" }];
     columnSet.forEach(function (e) {
-        var rect = jQuery.parseXML("<rect             style=\"fill: lawngreen; stroke: black; stroke-width: 1px; fill-opacity: 0.7;\"             xmlns=\"http://www.w3.org/2000/svg\" x=\"" + e.x + "\" width=\"16\" height=\"1\" y=\"" + e.y + "\" _y=\"" + e.y + "\"            id=\"clm" + e.name + "\"></rect>").documentElement;
+        var rect = jQuery.parseXML("<rect class=\"map_rect\"            style=\"fill: lawngreen; stroke: black; stroke-width: 1px; fill-opacity: 0.7;\"             xmlns=\"http://www.w3.org/2000/svg\" x=\"" + e.x + "\" width=\"16\" height=\"1\" y=\"" + e.y + "\" _y=\"" + e.y + "\"            id=\"clm" + e.name + "\"></rect>").documentElement;
         board.append(rect);
-        var text = jQuery.parseXML("<text style=\"fill: green;\"             xmlns=\"http://www.w3.org/2000/svg\" x=\"" + e.x + "\" y=\"" + (e.y - 4) + "\" _y=\"" + (e.y - 4) + "\"            id=\"txt" + e.name + "\">\u6CA1\u6709\u6570\u636E</text>").documentElement;
+        var text = jQuery.parseXML("<text class=\"map_value\" style=\"fill: green;\"             xmlns=\"http://www.w3.org/2000/svg\" x=\"" + (e.x + 8) + "\" dx=\"0\" y=\"" + (e.y - 4) + "\" _y=\"" + (e.y - 4) + "\"            id=\"txt" + e.name + "\">\u6CA1\u6709\u6570\u636E</text>").documentElement;
         board.append(text);
+        var legend = jQuery.parseXML("<text class=\"map_legend\" style=\"fill: green;\"             xmlns=\"http://www.w3.org/2000/svg\" x=\"" + (e.x + 8) + "\" dx=\"" + e.name.toString().length * -6 + "\" y=\"" + (e.y - 22) + "\" _y=\"" + (e.y - 22) + "\"            id=\"lgd" + e.name + "\">" + e.name + "</text>").documentElement;
+        board.append(legend);
     });
     $.getJSON("../rank.json", function (data) {
         data_province = data;
@@ -101,11 +110,12 @@
             });
         }
         drawColumn(YEAR);
+        drawPolyline();
     });
 })();
 // 地图上的柱形图
 function drawColumn(year) {
-    $('#map_svg text').text('没有数据');
+    $('#map_svg .map_value').text('没有数据');
     data_province[year.toString()].forEach(function (prvc) {
         $("#clm" + prvc[0])
             .attr('height', 2 + prvc[1] / max_province * 180 + "px")
@@ -116,6 +126,32 @@ function drawColumn(year) {
             .attr('y', function () {
             return parseInt($(this).attr('_y')) - parseFloat($("#clm" + prvc[0]).attr('height'));
         })
+            .attr('dx', function () {
+            return -8 * prvc[1].toString().length / 2;
+        })
             .text(prvc[1]);
+        $("#lgd" + prvc[0])
+            .attr('y', function () {
+            return parseInt($(this).attr('_y')) - parseFloat($("#clm" + prvc[0]).attr('height'));
+        });
     });
+}
+// 时变统计
+function drawPolyline() {
+    $('#polyline').append('<svg></svg>');
+    $('#polyline svg').attr('id', 'poly_svg').attr('xmlns', 'http://www.w3.org/2000/svg')
+        .attr('height', '475px').attr('width', '500px');
+    axis = new Axis2d($('#poly_svg')).domain_x(2009, 2019).domain_y(0, max_province);
+    var _loop_1 = function (p) {
+        data_province[p].forEach(function (d) {
+            draw(parseInt(p.toString()), d[1]);
+        });
+    };
+    for (var p in data_province) {
+        _loop_1(p);
+    }
+}
+function draw(x, y) {
+    var circle = jQuery.parseXML("<circle        style=\"fill: lawngreen; stroke: black; stroke-width: 1px; fill-opacity: 1;\"         xmlns=\"http://www.w3.org/2000/svg\" r=\"5\"></circle>").documentElement;
+    axis.append($(circle), x, y);
 }

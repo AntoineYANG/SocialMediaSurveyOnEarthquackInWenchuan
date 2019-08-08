@@ -5,7 +5,7 @@ if __name__ == "__main__":
     for i in range(2009, 2020):
         with open("../../../dataWenchuan/set" + str(i) + ".dat", encoding='utf-8') as file:
             origin = file.readline().split('/')
-            df = [origin[piece] for piece in range(0, len(origin), (int)(len(origin)/99))]
+            df = [origin[piece] for piece in range(0, len(origin), (int)(len(origin)/999))]
             print(len(df))
             texts.append(df)
             pass
@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
     # LDA模型，num_topics设置主题的个数
     lda = models.ldamodel.LdaModel(corpus=corpus, id2word=dictionary, num_topics=10,
-                                   decay=0.5, chunksize=200000)
+                                   decay=0.5, chunksize=20000)
 
     # LdaModel(num_terms=19, num_topics=2, decay=0.5, chunksize=2000)
 

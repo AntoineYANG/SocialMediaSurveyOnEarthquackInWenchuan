@@ -13,7 +13,7 @@
                 style="width: 112px; margin: 1px; padding: 3.9px 24px; position: relative; left: 238px;
                     border: 1px solid black; border-radius: 0px;">
                 2009
-                <span class="caret" style="margin-left: 20px;"></span>
+                <p class="caret" style="margin-left: 20px;"></p>
             </button>
             <ul id="yearlist" class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1"
                 style="left: 238px; top: 30px; min-width: 100px;">
@@ -56,24 +56,36 @@
     </div>
     <div id="container1" class="__row">
         <div class="__col-xs-2 __col-sm-2 __col-md-2 __col-lg-2 __col-stand">
-            <div class="left cloneable"></div>
+            <div class="left">
+                <div class="title"></div>
+            </div>
         </div>
         <div class="__col-xs-6 __col-sm-6 __col-md-6 __col-lg-6 __col-stand">
-            <div id="map" class="center cloneable"></div>
+            <div id="map" class="center">
+                <div class="title" style="width: 735px;"><p>区域统计</p></div>
+            </div>
         </div>
         <div class="__col-xs-4 __col-sm-4 __col-md-4 __col-lg-4 __col-stand">
-            <div class="right cloneable"></div>
+            <div id="polyline" class="right">
+                <div class="title"><p>时变统计</p></div>
+            </div>
         </div>
     </div>
     <div id="container2" class="__row">
         <div class="__col-xs-2 __col-sm-2 __col-md-2 __col-lg-2 __col-stand">
-            <div id="word_cloud" class="left cloneable"></div>
+            <div id="word_cloud" class="left cloneable">
+                <div class="title"><p>热度词云</p></div>
+            </div>
         </div>
         <div class="__col-xs-6 __col-sm-6 __col-md-6 __col-lg-6 __col-stand">
-            <div class="center cloneable"></div>
+            <div class="center">
+                <div class="title" style="width: 735px;"></div>
+            </div>
         </div>
         <div class="__col-xs-4 __col-sm-4 __col-md-4 __col-lg-4 __col-stand">
-            <div class="right cloneable"></div>
+            <div class="right">
+                <div class="title"></div>
+            </div>
         </div>
     </div>
     <script type="text/javascript" src="./javascripts/jquery.min.js"></script>
@@ -81,6 +93,7 @@
     <script type="text/javascript" src="./javascripts/d3.js"></script>
     <script type="text/javascript" src="./javascripts/d3.layout.cloud.js"></script>
     <script type="text/javascript" src="./javascripts/box.js"></script>
+    <script type="text/javascript" src="./javascripts/2D-axis.js"></script>
     <script type="text/javascript" src="./javascripts/cloud.js"></script>
     <script type="text/javascript" src="./javascripts/host.js"></script>
 </body>

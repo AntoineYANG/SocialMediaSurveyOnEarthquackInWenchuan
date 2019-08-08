@@ -1,11 +1,12 @@
 const color = d3.scale.category10();
 
 const width = parseInt(d3.select("#word_cloud").style("width"));
-const height = parseInt(d3.select("#word_cloud").style("height"));
+const height = parseInt(d3.select("#word_cloud").style("height")) - 24;
 
 d3.select("#word_cloud").append("svg")
     .style("width", "inherit")
     .style("height", "inherit")
+    .attr("id", "cloud_svg")
     .attr("viewBox", () => {
         return "0 0 " + width + " " + height;
     })
@@ -14,7 +15,19 @@ d3.select("#word_cloud").append("svg")
     .append("g")
     .attr("id", "cloud_g")
     .attr("transform", "translate(" + (parseInt(d3.select("#word_cloud").style("width"))) / 2.45 +
-        "," + parseInt(d3.select("#word_cloud").style("height")) / 1.9 + ")");
+        "," + parseInt(d3.select("#word_cloud").style("height")) / 2.8 + ")");
+
+$('#cloud_svg').addClass('still')
+    .css('-webkit-user-select', 'none')
+    .css('-moz-user-select', 'none')
+    .css('-o-user-select', 'none')
+    .css('user-select', 'none')
+    .attr('ondragstart', 'return false;')
+    .mousedown(function () {
+        Box.ready = true;
+        $(this).removeClass('still').addClass('cloning');
+        document.body.style.cursor = "move";
+    });
 
 // 数据
 {
