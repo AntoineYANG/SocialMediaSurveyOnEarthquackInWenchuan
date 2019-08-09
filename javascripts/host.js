@@ -2,8 +2,9 @@
  * @Author: Antoine YANG
  * @Date: 2019-08-08 15:15:09
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-08-08 20:12:53
+ * @Last Modified time: 2019-08-09 18:39:05
  */
+/// <reference path="./2D-axis.ts" />
 // 全局变量
 {
     var YEAR = 2009;
@@ -59,40 +60,40 @@
     $('#map svg').attr('id', 'map_svg').attr('xmlns', 'http://www.w3.org/2000/svg')
         .css('position', 'relative').css('top', '-498px').attr('height', '498px').attr('width', '734px');
     var board = $('#map_svg');
-    columnSet = [{ x: 475, y: 145, name: "黑龙江" },
-        { x: 460, y: 175, name: "吉林" },
-        { x: 130, y: 200, name: "新疆" },
-        { x: 440, y: 205, name: "辽宁" },
-        { x: 350, y: 210, name: "内蒙古" },
-        { x: 390, y: 222, name: "北京" },
-        { x: 400, y: 230, name: "天津" },
-        { x: 375, y: 250, name: "河北" },
-        { x: 300, y: 260, name: "宁夏" },
-        { x: 410, y: 265, name: "山东" },
-        { x: 356, y: 268, name: "山西" },
-        { x: 210, y: 285, name: "青海" },
-        { x: 285, y: 294, name: "甘肃" },
-        { x: 326, y: 300, name: "陕西" },
-        { x: 372, y: 300, name: "河南" },
-        { x: 430, y: 310, name: "江苏" },
-        { x: 120, y: 320, name: "西藏" },
-        { x: 450, y: 320, name: "上海" },
-        { x: 408, y: 325, name: "安徽" },
-        { x: 366, y: 330, name: "湖北" },
-        { x: 270, y: 342, name: "四川" },
-        { x: 312, y: 344, name: "重庆" },
-        { x: 435, y: 350, name: "浙江" },
-        { x: 400, y: 375, name: "江西" },
-        { x: 360, y: 380, name: "湖南" },
-        { x: 310, y: 385, name: "贵州" },
-        { x: 420, y: 390, name: "福建" },
-        { x: 455, y: 410, name: "台湾" },
-        { x: 255, y: 414, name: "云南" },
-        { x: 385, y: 418, name: "广东" },
-        { x: 330, y: 420, name: "广西" },
-        { x: 342, y: 470, name: "海南" },
-        { x: 562, y: 332, name: "海外" },
-        { x: 650, y: 332, name: "其他" }];
+    columnSet = [{ x: 475, y: 145, name: "黑龙江", data: null },
+        { x: 460, y: 175, name: "吉林", data: null },
+        { x: 130, y: 200, name: "新疆", data: null },
+        { x: 440, y: 205, name: "辽宁", data: null },
+        { x: 350, y: 210, name: "内蒙古", data: null },
+        { x: 390, y: 222, name: "北京", data: null },
+        { x: 400, y: 230, name: "天津", data: null },
+        { x: 375, y: 250, name: "河北", data: null },
+        { x: 300, y: 260, name: "宁夏", data: null },
+        { x: 410, y: 265, name: "山东", data: null },
+        { x: 356, y: 268, name: "山西", data: null },
+        { x: 210, y: 285, name: "青海", data: null },
+        { x: 285, y: 294, name: "甘肃", data: null },
+        { x: 326, y: 300, name: "陕西", data: null },
+        { x: 372, y: 300, name: "河南", data: null },
+        { x: 430, y: 310, name: "江苏", data: null },
+        { x: 120, y: 320, name: "西藏", data: null },
+        { x: 450, y: 320, name: "上海", data: null },
+        { x: 408, y: 325, name: "安徽", data: null },
+        { x: 366, y: 330, name: "湖北", data: null },
+        { x: 270, y: 342, name: "四川", data: null },
+        { x: 312, y: 344, name: "重庆", data: null },
+        { x: 435, y: 350, name: "浙江", data: null },
+        { x: 400, y: 375, name: "江西", data: null },
+        { x: 360, y: 380, name: "湖南", data: null },
+        { x: 310, y: 385, name: "贵州", data: null },
+        { x: 420, y: 390, name: "福建", data: null },
+        { x: 455, y: 410, name: "台湾", data: null },
+        { x: 255, y: 414, name: "云南", data: null },
+        { x: 385, y: 418, name: "广东", data: null },
+        { x: 330, y: 420, name: "广西", data: null },
+        { x: 342, y: 470, name: "海南", data: null },
+        { x: 562, y: 332, name: "海外", data: null },
+        { x: 650, y: 332, name: "其他", data: null }];
     columnSet.forEach(function (e) {
         var rect = jQuery.parseXML("<rect class=\"map_rect\"            style=\"fill: lawngreen; stroke: black; stroke-width: 1px; fill-opacity: 0.7;\"             xmlns=\"http://www.w3.org/2000/svg\" x=\"" + e.x + "\" width=\"16\" height=\"1\" y=\"" + e.y + "\" _y=\"" + e.y + "\"            id=\"clm" + e.name + "\"></rect>").documentElement;
         board.append(rect);
@@ -100,14 +101,27 @@
         board.append(text);
         var legend = jQuery.parseXML("<text class=\"map_legend\" style=\"fill: green;\"             xmlns=\"http://www.w3.org/2000/svg\" x=\"" + (e.x + 8) + "\" dx=\"" + e.name.toString().length * -6 + "\" y=\"" + (e.y - 22) + "\" _y=\"" + (e.y - 22) + "\"            id=\"lgd" + e.name + "\">" + e.name + "</text>").documentElement;
         board.append(legend);
+        var datalist = [];
+        for (var i = 2009; i < 2020; i++) {
+            datalist.push([i, 0]);
+        }
+        e.data = datalist;
     });
     $.getJSON("../rank.json", function (data) {
         data_province = data;
-        for (var p in data_province) {
+        var _loop_1 = function (p) {
             data_province[p].forEach(function (d) {
+                for (var i = 0; i < columnSet.length; i++) {
+                    if (d[0] == columnSet[i].name) {
+                        columnSet[i].data[parseInt(p) - 2009][1] = d[1];
+                    }
+                }
                 if (d[1] > max_province)
                     max_province = d[1];
             });
+        };
+        for (var p in data_province) {
+            _loop_1(p);
         }
         drawColumn(YEAR);
         drawPolyline();
@@ -141,17 +155,17 @@ function drawPolyline() {
     $('#polyline').append('<svg></svg>');
     $('#polyline svg').attr('id', 'poly_svg').attr('xmlns', 'http://www.w3.org/2000/svg')
         .attr('height', '475px').attr('width', '500px');
-    axis = new Axis2d($('#poly_svg')).domain_x(2009, 2019).domain_y(0, max_province);
-    var _loop_1 = function (p) {
-        data_province[p].forEach(function (d) {
-            draw(parseInt(p.toString()), d[1]);
+    axis = new Axis.Axis2d($('#poly_svg'));
+    axis.domain_x(2009, 2019).domain_y(0, max_province).set('margin', '0').set('padding', '60 20 40');
+    var _loop_2 = function (i) {
+        var list = columnSet[i].data;
+        axis.path(list).css('stroke-width', '2px').css('stroke', 'green').css('opacity', 0.5);
+        list.forEach(function (e) {
+            axis.append("rect", e[0], e[1]).css('fill', 'lawngreen');
+            axis.text(columnSet[i].name + ": " + e[1], e[0], e[1]);
         });
     };
-    for (var p in data_province) {
-        _loop_1(p);
+    for (var i = 0; i < columnSet.length; i++) {
+        _loop_2(i);
     }
-}
-function draw(x, y) {
-    var circle = jQuery.parseXML("<circle        style=\"fill: lawngreen; stroke: black; stroke-width: 1px; fill-opacity: 1;\"         xmlns=\"http://www.w3.org/2000/svg\" r=\"5\"></circle>").documentElement;
-    axis.append($(circle), x, y);
 }
