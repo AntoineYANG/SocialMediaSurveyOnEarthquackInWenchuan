@@ -2,26 +2,30 @@
  * @Author: Antoine YANG 
  * @Date: 2019-08-08 15:15:25 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-08-09 18:36:48
+ * @Last Modified time: 2019-08-10 02:39:03
  */
-
 namespace Axis {
     export abstract class Axis {
-        protected parent: JQuery<Element> = null;
-        protected board: JQuery<Element> = null;
-        protected box: JQuery<Element> = null;
-        protected area: JQuery<Element> = null;
+        protected parent: JQuery<HTMLElement> = null;
+        protected board: JQuery<HTMLElement> = null;
+        protected box: JQuery<HTMLElement> = null;
+        protected area: JQuery<HTMLElement> = null;
         protected margin: Array<number> = [20, 20, 20, 20];
         protected width: number = 0;
         protected height: number = 0;
-        protected padding: Array<number> = [50, 20, 50, 20];
+        protected padding: Array<number> = [60, 20, 50, 60];
         protected w_: number = 0;
         protected h_: number = 0;
         protected fill: string = "#eee";
         protected background: string = "white";
-        protected observed: Array< JQuery<Element> > = [];
+        protected observed: Array< JQuery<HTMLElement> > = [];
 
-        protected constructor(parent: JQuery<Element>) {
+        /**
+         *Creates an instance of Axis.
+         * @param {JQuery<HTMLElement>} parent the parent <SVG> JQuery element
+         * @memberof Axis
+         */
+        protected constructor(parent: JQuery<HTMLElement>) {
             this.parent = parent;
             this.width = parseFloat(parent.attr('width')) - this.margin[1] - this.margin[3];
             this.height = parseFloat(parent.attr('height')) - this.margin[0] - this.margin[2];
@@ -46,6 +50,14 @@ namespace Axis {
             this.area = $(area);
         }
 
+        /**
+         *Parses a string into 4d-array.
+         * @protected
+         * @static
+         * @param {string} str
+         * @returns {Array<number>} 4d-array
+         * @memberof Axis
+         */
         protected static parseBox(str: string): Array<number> {
             let val: Array<number> = [];
             let list: Array<string> = str.indexOf(',') != -1 ? str.split(',') : str.split(' ');
@@ -69,42 +81,192 @@ namespace Axis {
             return set;
         }
 
+        /**
+         *Removes all the observed elements in the axis.
+         * @memberof Axis
+         */
+        public clear(): void {
+            this.observed.forEach(e => {
+                e.remove();
+            });
+            this.observed = [];
+        }
+
+        /**
+         *Sets one attribute of this object.
+         * @abstract
+         * @param {string} param the name of the attribute
+         * @param {string} value the new value of this attribute
+         * @returns {Axis} the object itself
+         * @memberof Axis
+         */
         public abstract set(param: string, value: string): Axis;
+
+        /**
+         *Adjusts the box model.
+         * @protected
+         * @abstract
+         * @memberof Axis
+         */
         protected abstract adjustBox(): void;
-        public abstract append(element: string, x: number, y: number): JQuery<Element>;
-        public abstract text(text: string, x: number, y: number): JQuery<Element>;
-        public abstract path(data: Array< Array<number> >): JQuery<Element>;
+
+        /**
+         *Appends an SVG element by the coordinate.
+         * @abstract
+         * @param {string} element the tab of the element needed appending
+         * @param {number} data each dimension of the coordinate
+         * @returns {JQuery<HTMLElement>} the appended jQuery element
+         * @memberof Axis
+         */
+        public abstract append(element: string, ...data: Array<number>): JQuery<HTMLElement>;
+
+        /**
+         *Appends a kind of SVG elements by a list of coordinates.
+         * @abstract
+         * @param {string} element the tab of the elements needed appending
+         * @param {Array< Array<number> >} nodes list of coordinates
+         * @returns {JQuery<HTMLElement>} the appended jQuery elements
+         * @memberof Axis
+         */
+        public abstract join(element: string, nodes: Array< Array<number> >): JQuery<HTMLElement>;
+
+        /**
+         *Appends a <text> element by the coordinate.
+         * @abstract
+         * @param {string} text the text of the element
+         * @param {number} data each dimension of the coordinate
+         * @returns {JQuery<HTMLElement>} the appended jQuery element
+         * @memberof Axis
+         */
+        public abstract addtext(text: string, ...data: Array<number>): JQuery<HTMLElement>;
+
+        /**
+         *Appends a <path> element by a list of coordinates.
+         * @abstract
+         * @param {Array< Array<number> >} data list of coordinates
+         * @returns {JQuery<HTMLElement>} the appended jQuery element
+         * @memberof Axis
+         */
+        public abstract path(data: Array< Array<number> >): JQuery<HTMLElement>;
+
+        /**
+         *Updates the scales and all the observed elements in the axis.
+         * @protected
+         * @abstract
+         * @memberof Axis
+         */
         protected abstract update(): void;
+
+        /**
+         *Sets the principle to act when input data is out of range, default=forbidden.
+         * @abstract
+         * @param {string} solution principle
+         * * `hard` — calculate it by the scale
+         * * `stuck` — regard it as the min / max value
+         * * `forbidden` — raise an error
+         * @param {string} limit the referred scale, default='both'
+         * * `both` — both two scales
+         * * `x` — x scale
+         * * `y` — y scale
+         * @returns {Axis} the object itself
+         * @memberof Axis
+         */
         public abstract handle(solution: string, limit: string): Axis;
     }
 
     export class Axis2d extends Axis {
         private scale_x: LinearScale = null;
         private scale_y: LinearScale = null;
+        private X: JQuery<HTMLElement> = null;
+        private Y: JQuery<HTMLElement> = null;
+        private X_domain_min: number = null;
+        private X_domain_max: number = null;
+        private Y_domain_min: number = null;
+        private Y_domain_max: number = null;
+        private X_ticks: Array< JQuery<HTMLElement> > = [];
+        private Y_ticks: Array< JQuery<HTMLElement> > = [];
         
-        public constructor(parent: JQuery<Element>) {
+        /**
+         *Creates an instance of Axis2d.
+         * @param {JQuery<HTMLElement>} parent the parent <SVG> JQuery element
+         * @memberof Axis2d
+         */
+        public constructor(parent: JQuery<HTMLElement>) {
             super(parent);
             this.scale_x = new LinearScale();
             this.scale_y = new LinearScale();
             this.adjustBox();
+            this.X = $(jQuery.parseXML(`<line \
+                style="stroke: black; stroke-width: 1px;" \
+                x1="${this.padding[3]}" y1="${this.padding[0] + this.h_}" \
+                x2="${this.padding[3] + this.w_}" y2="${this.padding[0] + this.h_}"\
+                xmlns="http://www.w3.org/2000/svg" __style__="scale"></line>`).documentElement);
+            this.board.append(this.X);
+            this.Y = $(jQuery.parseXML(`<line \
+                style="stroke: black; stroke-width: 1px;" \
+                x1="${this.padding[3]}" y1="${this.padding[0] + this.h_}" \
+                x2="${this.padding[3]}" y2="${this.padding[0]}"\
+                xmlns="http://www.w3.org/2000/svg" __style__="scale"></line>`).documentElement);
+            this.board.append(this.Y);
         }
     
+        /**
+         *Sets the domain of the x scale.
+         * @param {number} min minimum input value
+         * @param {number} max maximun input value
+         * @returns {Axis2d} the object itself
+         * @memberof Axis2d
+         */
         public domain_x(min: number, max: number): Axis2d {
+            this.X_domain_min = min;
+            this.X_domain_max = max;
             this.scale_x.domain(min, max);
+            this.note(5, 'x');
+            this.update();
             return this;
         }
+
+        /**
+         *Sets the domain of the y scale.
+         * @param {number} min minimum input value
+         * @param {number} max maximun input value
+         * @returns {Axis2d} the object itself
+         * @memberof Axis2d
+         */
         public domain_y(min: number, max: number): Axis2d {
+            this.Y_domain_min = min;
+            this.Y_domain_max = max;
             this.scale_y.domain(min, max);
+            this.note(5, 'y');
+            this.update();
             return this;
         }
     
+        /**
+         *Returns the projection of x-corrdinate.
+         * @param {number} x x-corrdinate
+         * @returns {number} x-projection
+         * @memberof Axis2d
+         */
         public fx(x: number): number {
             return this.scale_x.to(x);
         }
+
+        /**
+         *Returns the projection of y-coordinate.
+         * @param {number} y y-corrdinate
+         * @returns {number} y-projection
+         * @memberof Axis2d
+         */
         public fy(y: number): number {
             return this.scale_y.to(y);
         }
     
+        /**
+         *Adjusts the box model.
+         * @protected
+         * @memberof Axis
+         */
         adjustBox(): void {
             this.width = parseFloat(this.parent.attr('width')) - this.margin[1] - this.margin[3];
             this.height = parseFloat(this.parent.attr('height')) - this.margin[0] - this.margin[2];
@@ -121,12 +283,24 @@ namespace Axis {
                 .attr('y', `${this.padding[0]}px`);
             this.scale_x.range(this.padding[3], this.padding[3] + this.w_);
             this.scale_y.range(this.padding[0] + this.h_, this.padding[0]);
-            this.update();
         }
     
-        public handle(solution: string, limit: string = 'all'): Axis {
+        /**
+         *Set the principle to act when input data is out of range, default=forbidden
+         * @param {string} solution principle
+         * * `hard` — calculate it by the scale
+         * * `stuck` — regard it as the min / max value
+         * * `forbidden` — raise an error
+         * @param {string} limit the referred scale, default='both'
+         * * `both` — both two scales
+         * * `x` — x scale
+         * * `y` — y scale
+         * @returns {Axis} the object itself
+         * @memberof Axis
+         */
+        public handle(solution: string, limit: string = 'both'): Axis {
             switch (limit) {
-                case 'all':
+                case 'both':
                     this.handle(solution, 'x').handle(solution, 'y');
                     break;
                 case 'x':
@@ -156,9 +330,23 @@ namespace Axis {
                     }
                     break;
             }
+            this.update();
             return <Axis><any>this;
         }
     
+        /**
+         *Sets one attribute of this object.
+         * @param {string} param the name of the attribute
+         * * `background`
+         * * `fill`
+         * * `margin`
+         * * `padding`
+         * * `width`
+         * * `height`
+         * @param {string} value the new value of this attribute
+         * @returns {Axis} the object itself
+         * @memberof Axis
+         */
         public set(param: string, value: string): Axis {
             value = value.toString();
             switch (param) {
@@ -184,11 +372,19 @@ namespace Axis {
                     break;
             }
             this.adjustBox();
+            this.update();
             return <Axis><any>this;
         }
     
-        public append(element: string, x: number, y: number): JQuery<Element> {
-            let svg: JQuery<Element> = $(jQuery.parseXML(`<${element}\
+        /**
+         *Appends an SVG element by the coordinate.
+         * @param {string} element the tab of the element needed appending
+         * @param {number} data each dimension of the coordinate
+         * @returns {JQuery<HTMLElement>} the appended jQuery element
+         * @memberof Axis
+         */
+        public append(element: string, ...data: Array<number>): JQuery<HTMLElement> {
+            let svg: JQuery<HTMLElement> = $(jQuery.parseXML(`<${element}\
                 style="fill: white; stroke: black; stroke-width: 1px; fill-opacity: 1;" \
                 xmlns="http://www.w3.org/2000/svg"></${element}>`).documentElement);
             switch (element) {
@@ -200,7 +396,7 @@ namespace Axis {
                     break;
             }
             svg.attr('__style__', 'point');
-            svg.attr('__data__', `${x},${y}`);
+            svg.attr('__data__', `${data[0]},${data[1]}`);
             svg.attr('x', this.fx(parseFloat(svg.attr('__data__').toString().split(',')[0])));
             svg.attr('y', this.fy(parseFloat(svg.attr('__data__').toString().split(',')[1])));
             svg.attr('cx', this.fx(parseFloat(svg.attr('__data__').toString().split(',')[0])));
@@ -210,12 +406,34 @@ namespace Axis {
             return svg;
         }
 
-        public text(text: string, x: number, y: number): JQuery<Element> {
-            let svg: JQuery<Element> = $(jQuery.parseXML(`<text\
+        /**
+         *Appends a kind of SVG elements by a list of coordinates.
+         * @param {string} element the tab of the elements needed appending
+         * @param {Array< Array<number> >} nodes list of coordinates
+         * @returns {JQuery<HTMLElement>} the appended jQuery elements
+         * @memberof Axis
+         */
+        public join(element: string, nodes: Array< Array<number> >): JQuery<HTMLElement> {
+            let svg: JQuery<HTMLElement> = $('_');
+            nodes.forEach(d => {
+                svg = svg.add(this.append(element, d[0], d[1]));
+            });
+            return svg;
+        }
+
+        /**
+         *Appends a <text> element by the coordinate.
+         * @param {string} text the text of the element
+         * @param {number} data each dimension of the coordinate
+         * @returns {JQuery<HTMLElement>} the appended jQuery element
+         * @memberof Axis
+         */
+        public addtext(text: string, ...data: Array<number>): JQuery<HTMLElement> {
+            let svg: JQuery<HTMLElement> = $(jQuery.parseXML(`<text\
                 style="fill: black; fill-opacity: 1;" \
-                xmlns="http://www.w3.org/2000/svg">${text}</text>`).documentElement);
+                xmlns="http://www.w3.org/2000/svg">${text}</pa>`).documentElement);
             svg.attr('__style__', 'point');
-            svg.attr('__data__', `${x},${y}`);
+            svg.attr('__data__', `${data[0]},${data[1]}`);
             svg.attr('x', this.fx(parseFloat(svg.attr('__data__').toString().split(',')[0])));
             svg.attr('y', this.fy(parseFloat(svg.attr('__data__').toString().split(',')[1])));
             svg.attr('cx', this.fx(parseFloat(svg.attr('__data__').toString().split(',')[0])));
@@ -225,7 +443,13 @@ namespace Axis {
             return svg;
         }
 
-        public path(data: Array< Array<number> >): JQuery<Element> {
+        /**
+         *Appends a <path> element by a list of coordinates.
+         * @param {Array< Array<number> >} data list of coordinates
+         * @returns {JQuery<HTMLElement>} the appended jQuery element
+         * @memberof Axis
+         */
+        public path(data: Array< Array<number> >): JQuery<HTMLElement> {
             let points: Array<string> = [];
             data.forEach(e => {
                 points.push(e.join(','));
@@ -234,7 +458,7 @@ namespace Axis {
             for (let i: number = 1; i < data.length; i++) {
                 d += ` L${this.fx(data[i][0])} ${this.fy(data[i][1])}`;
             }
-            let polyline: JQuery<Element> = $(jQuery.parseXML(`<path __data__="${points.join(';')};"\
+            let polyline: JQuery<HTMLElement> = $(jQuery.parseXML(`<path __data__="${points.join(';')};"\
                 style="stroke: black; stroke-width: 1px; fill: none;" d="${d}"\
                 xmlns="http://www.w3.org/2000/svg" __style__="path"></path>`).documentElement);
             this.board.append(polyline);
@@ -243,7 +467,27 @@ namespace Axis {
             return polyline;
         }
     
+        /**
+         *Updates the scales and all the observed elements in the axis.
+         * @protected
+         * @abstract
+         * @memberof Axis
+         */
         update(): void {
+            this.X.attr('x1', this.padding[3])
+                .attr('y1', this.padding[0] + this.h_)
+                .attr('x2', this.padding[3] + this.w_)
+                .attr('y2', this.padding[0] + this.h_);
+            this.Y.attr('x1', this.padding[3])
+                .attr('y1', this.padding[0] + this.h_)
+                .attr('x2', this.padding[3])
+                .attr('y2', this.padding[0]);
+            let ticks: number = this.X_ticks.length;
+            if (ticks > 0)
+                this.note(ticks, 'x');
+            ticks = this.Y_ticks.length;
+            if (ticks > 0)
+                this.note(ticks, 'y');
             this.observed.forEach(e => {
                 if (e.attr('__style__') == 'point') {
                     e.attr('x', this.fx(parseFloat(e.attr('__data__').toString().split(',')[0])));
@@ -262,6 +506,88 @@ namespace Axis {
                     e.attr('d', d);
                 }
             });
+        }
+
+        /**
+         *Gets the scale(s).
+         * @param {string} [limit='both'] referred scale(s)
+         * * `both` — both two scales
+         * * `x` — x scale
+         * * `y` — y scale
+         * @returns {JQuery<HTMLElement>} JQuery selection
+         * @memberof Axis2d
+         */
+        public scale(limit: string = 'both'): JQuery<HTMLElement> {
+            switch (limit) {
+                case 'both':
+                    return this.X.add(this.Y);
+                case 'x':
+                    return this.X;
+                case 'y':
+                    return this.Y;
+            }
+            return null;
+        }
+
+        /**
+         *Adds ticks on the scale(s)
+         * @param {number} ticks number of ticks
+         * @param {string} [limit='both'] referred scale(s)
+         * * `both` — both two scales
+         * * `x` — x scale
+         * * `y` — y scale
+         * @returns {JQuery<HTMLElement>} jQuery selection of the added <text> element
+         * @memberof Axis2d
+         */
+        public note(ticks: number, limit: string = 'both'): JQuery<HTMLElement> {
+            let box: JQuery<HTMLElement> = $('_');
+            let step: number = 0;
+            let level: number = 0;
+            switch (limit) {
+                case 'both':
+                    box = box.add(this.note(ticks, 'x'));
+                    box = box.add(this.note(ticks, 'y'));
+                    break;
+                case 'x':
+                    this.X_ticks.forEach(e => {
+                        e.remove();
+                    });
+                    this.X_ticks = [];
+                    step = (this.X_domain_max - this.X_domain_min) / (ticks - 1);
+                    level = levelof(step) - 1;
+                    step = parseInt((step / Math.pow(10, level)).toString()) * Math.pow(10, level);
+                    for (let i: number = 0; i < ticks; i++) {
+                        let svg: JQuery<HTMLElement> = $(jQuery.parseXML(`<text text-anchor="middle"\
+                            style="fill: black; fill-opacity: 1;" __style__="tick_x"\
+                            x="${this.fx(this.X_domain_min + step * i)}" \
+                            y="${this.padding[0] + this.h_}" dy="18" \
+                            xmlns="http://www.w3.org/2000/svg">${this.X_domain_min + step * i}</text>`).documentElement);
+                        this.board.append(svg);
+                        this.X_ticks.push(svg);
+                        box = box.add(svg);
+                    }
+                    break;
+                case 'y':
+                    this.Y_ticks.forEach(e => {
+                        e.remove();
+                    });
+                    this.Y_ticks = [];
+                    step = (this.Y_domain_max - this.Y_domain_min) / (ticks - 1);
+                    level = levelof(step) - 1;
+                    step = parseInt((step / Math.pow(10, level)).toString()) * Math.pow(10, level);
+                    for (let i: number = 0; i < ticks; i++) {
+                        let svg: JQuery<HTMLElement> = $(jQuery.parseXML(`<text text-anchor="end"\
+                            style="fill: black; fill-opacity: 1;" __style__="tick_y"\
+                            x="${this.padding[3]}" dx="-6" \
+                            y="${this.fy(this.Y_domain_min + step * i)}"\
+                            xmlns="http://www.w3.org/2000/svg">${this.Y_domain_min + step * i}</text>`).documentElement);
+                        this.board.append(svg);
+                        this.Y_ticks.push(svg);
+                        box = box.add(svg);
+                    }
+                    break;
+            }
+            return box;
         }
     }
     
@@ -328,9 +654,9 @@ namespace Axis {
             }
             return (cor - this.range_min) * (this.domain_max - this.domain_min) / (this.range_max - this.range_min) + this.domain_min;
         }
-        handle(s: Solution): LinearScale {
+        handle(s: Solution): Scale {
             this.out_of_range = s;
-            return this;
+            return <Scale><any> this;
         }
         random(): number {
             if (this.domain_min == null || this.domain_max == null || this.range_min == null || this.range_max == null) {
@@ -339,5 +665,28 @@ namespace Axis {
             }
             return this.to(Math.random() * (this.domain_max - this.domain_min) + this.domain_min);
         }
+    }
+
+    /**
+     *
+     * Returns the base 10 logarithm of a number
+     * @param {number} x
+     * @returns {number} logarithm: int
+     */
+    function levelof(x: number): number {
+        let level: number = 1;
+        if (x >= 10) {
+            while (x > 100) {
+                x /= 10;
+                level++;
+            }
+        }
+        else {
+            while (x < 10) {
+                x *= 10;
+                level--;
+            }
+        }
+        return level;
     }
 }

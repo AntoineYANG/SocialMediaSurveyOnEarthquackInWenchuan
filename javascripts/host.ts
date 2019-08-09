@@ -2,10 +2,11 @@
  * @Author: Antoine YANG 
  * @Date: 2019-08-08 15:15:09 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-08-09 18:39:05
+ * @Last Modified time: 2019-08-10 02:09:33
  */
 
 /// <reference path="./2D-axis.ts" />
+declare function getCloud(year: string, limit: number): void;
 
 // 全局变量
 {
@@ -178,13 +179,12 @@ function drawPolyline() {
     $('#polyline svg').attr('id', 'poly_svg').attr('xmlns', 'http://www.w3.org/2000/svg')
         .attr('height', '475px').attr('width', '500px');
     axis = new Axis.Axis2d($('#poly_svg'));
-    axis.domain_x(2009, 2019).domain_y(0, max_province).set('margin', '0').set('padding', '60 20 40');
+    axis.domain_x(2009, 2019).domain_y(0, max_province).set('margin', '0');
+    axis.note(11, 'x');
+    axis.note(6, 'y');
     for (let i: number = 0; i < columnSet.length; i++) {
         let list: Array<any> = columnSet[i].data;
         axis.path(list).css('stroke-width', '2px').css('stroke', 'green').css('opacity', 0.5);
-        list.forEach(e => {
-            axis.append("rect", e[0], e[1]).css('fill', 'lawngreen');
-            axis.text(columnSet[i].name + ": " + e[1], e[0], e[1]);
-        });
+        axis.join('rect', list).css('fill', 'lawngreen');
     }
 }

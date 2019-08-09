@@ -2,7 +2,7 @@
  * @Author: Antoine YANG
  * @Date: 2019-08-08 15:15:09
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-08-09 18:39:05
+ * @Last Modified time: 2019-08-10 01:11:36
  */
 /// <reference path="./2D-axis.ts" />
 // 全局变量
@@ -156,16 +156,12 @@ function drawPolyline() {
     $('#polyline svg').attr('id', 'poly_svg').attr('xmlns', 'http://www.w3.org/2000/svg')
         .attr('height', '475px').attr('width', '500px');
     axis = new Axis.Axis2d($('#poly_svg'));
-    axis.domain_x(2009, 2019).domain_y(0, max_province).set('margin', '0').set('padding', '60 20 40');
-    var _loop_2 = function (i) {
+    axis.domain_x(2009, 2019).domain_y(0, max_province).set('margin', '0');
+    axis.note(11, 'x');
+    axis.note(6, 'y');
+    for (var i = 0; i < columnSet.length; i++) {
         var list = columnSet[i].data;
         axis.path(list).css('stroke-width', '2px').css('stroke', 'green').css('opacity', 0.5);
-        list.forEach(function (e) {
-            axis.append("rect", e[0], e[1]).css('fill', 'lawngreen');
-            axis.text(columnSet[i].name + ": " + e[1], e[0], e[1]);
-        });
-    };
-    for (var i = 0; i < columnSet.length; i++) {
-        _loop_2(i);
+        axis.join('rect', list).css('fill', 'lawngreen');
     }
 }
