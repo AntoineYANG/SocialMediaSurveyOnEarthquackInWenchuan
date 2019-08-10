@@ -2,9 +2,9 @@
  * @Author: Antoine YANG
  * @Date: 2019-08-08 15:15:09
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-08-10 01:11:36
+ * @Last Modified time: 2019-08-10 21:43:01
  */
-/// <reference path="./2D-axis.ts" />
+/// <reference path="./visf.ts" />
 // 全局变量
 {
     var YEAR = 2009;
@@ -94,12 +94,13 @@
         { x: 342, y: 470, name: "海南", data: null },
         { x: 562, y: 332, name: "海外", data: null },
         { x: 650, y: 332, name: "其他", data: null }];
+    var sheme = new Visf.Color.Artists.Monet.Monet_bright();
     columnSet.forEach(function (e) {
-        var rect = jQuery.parseXML("<rect class=\"map_rect\"            style=\"fill: lawngreen; stroke: black; stroke-width: 1px; fill-opacity: 0.7;\"             xmlns=\"http://www.w3.org/2000/svg\" x=\"" + e.x + "\" width=\"16\" height=\"1\" y=\"" + e.y + "\" _y=\"" + e.y + "\"            id=\"clm" + e.name + "\"></rect>").documentElement;
+        var rect = jQuery.parseXML("<rect class=\"map_rect\"            style=\"fill: " + sheme.at(0) + "; stroke: " + sheme.getOutstand() + "; stroke-width: 1px; fill-opacity: 0.7;\"             xmlns=\"http://www.w3.org/2000/svg\" x=\"" + e.x + "\" width=\"16\" height=\"1\" y=\"" + e.y + "\" _y=\"" + e.y + "\"            id=\"clm" + e.name + "\"></rect>").documentElement;
         board.append(rect);
-        var text = jQuery.parseXML("<text class=\"map_value\" style=\"fill: green;\"             xmlns=\"http://www.w3.org/2000/svg\" x=\"" + (e.x + 8) + "\" dx=\"0\" y=\"" + (e.y - 4) + "\" _y=\"" + (e.y - 4) + "\"            id=\"txt" + e.name + "\">\u6CA1\u6709\u6570\u636E</text>").documentElement;
+        var text = jQuery.parseXML("<text class=\"map_value\" style=\"fill: " + sheme.at(1) + ";\"             xmlns=\"http://www.w3.org/2000/svg\" x=\"" + (e.x + 8) + "\" dx=\"0\" y=\"" + (e.y - 4) + "\" _y=\"" + (e.y - 4) + "\"            id=\"txt" + e.name + "\">\u6CA1\u6709\u6570\u636E</text>").documentElement;
         board.append(text);
-        var legend = jQuery.parseXML("<text class=\"map_legend\" style=\"fill: green;\"             xmlns=\"http://www.w3.org/2000/svg\" x=\"" + (e.x + 8) + "\" dx=\"" + e.name.toString().length * -6 + "\" y=\"" + (e.y - 22) + "\" _y=\"" + (e.y - 22) + "\"            id=\"lgd" + e.name + "\">" + e.name + "</text>").documentElement;
+        var legend = jQuery.parseXML("<text class=\"map_legend\" style=\"fill: " + sheme.at(1) + ";\"             xmlns=\"http://www.w3.org/2000/svg\" x=\"" + (e.x + 8) + "\" dx=\"" + e.name.toString().length * -6 + "\" y=\"" + (e.y - 22) + "\" _y=\"" + (e.y - 22) + "\"            id=\"lgd" + e.name + "\">" + e.name + "</text>").documentElement;
         board.append(legend);
         var datalist = [];
         for (var i = 2009; i < 2020; i++) {
@@ -155,13 +156,14 @@ function drawPolyline() {
     $('#polyline').append('<svg></svg>');
     $('#polyline svg').attr('id', 'poly_svg').attr('xmlns', 'http://www.w3.org/2000/svg')
         .attr('height', '475px').attr('width', '500px');
-    axis = new Axis.Axis2d($('#poly_svg'));
-    axis.domain_x(2009, 2019).domain_y(0, max_province).set('margin', '0');
+    axis = new Visf.Axis.Axis2d($('#poly_svg'), new Visf.Color.Artists.Monet.Monet_bright());
+    axis.xScale('ordinal').among_x([2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019])
+        .domain_y(0, max_province * 1.2).set('margin', '0');
     axis.note(11, 'x');
-    axis.note(6, 'y');
+    axis.note(8, 'y');
     for (var i = 0; i < columnSet.length; i++) {
         var list = columnSet[i].data;
-        axis.path(list).css('stroke-width', '2px').css('stroke', 'green').css('opacity', 0.5);
-        axis.join('rect', list).css('fill', 'lawngreen');
+        axis.path(list).css('stroke-width', '2px').css('opacity', 0.5);
+        axis.join('circle', list);
     }
 }

@@ -1,4 +1,5 @@
-const color = d3.scale.category10();
+const scheme = new Visf.Color.Artists.Monet.Monet_bright();
+const color = i => scheme.at(i);
 
 const width = parseInt(d3.select("#word_cloud").style("width"));
 const height = parseInt(d3.select("#word_cloud").style("height")) - 24;

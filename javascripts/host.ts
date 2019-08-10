@@ -2,10 +2,10 @@
  * @Author: Antoine YANG 
  * @Date: 2019-08-08 15:15:09 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-08-10 02:09:33
+ * @Last Modified time: 2019-08-10 21:43:01
  */
 
-/// <reference path="./2D-axis.ts" />
+/// <reference path="./visf.ts" />
 declare function getCloud(year: string, limit: number): void;
 
 // 全局变量
@@ -15,7 +15,7 @@ declare function getCloud(year: string, limit: number): void;
     var data_province = {};
     var max_province: number = 0;
     var columnSet: Array<any> = [];
-    var axis: Axis.Axis2d = null;
+    var axis: Visf.Axis.Axis2d = null;
 }
 
 // 文件路径
@@ -104,21 +104,23 @@ declare function getCloud(year: string, limit: number): void;
                 {x: 562, y: 332, name: "海外", data: null},
                 {x: 650, y: 332, name: "其他", data: null}];
 
+    let sheme: Visf.Color.Color = new Visf.Color.Artists.Monet.Monet_bright();
+    
     columnSet.forEach(e => {
         let rect: HTMLElement = jQuery.parseXML(`<rect class="map_rect"\
-            style="fill: lawngreen; stroke: black; stroke-width: 1px; fill-opacity: 0.7;" \
+            style="fill: ${sheme.at(0)}; stroke: ${sheme.getOutstand()}; stroke-width: 1px; fill-opacity: 0.7;" \
             xmlns="http://www.w3.org/2000/svg" x="${e.x}" width="16" height="1" y="${e.y}" _y="${e.y}"\
             id="clm${e.name}"></rect>`).documentElement;
 
         board.append(rect);
 
-        let text: HTMLElement = jQuery.parseXML(`<text class="map_value" style="fill: green;" \
+        let text: HTMLElement = jQuery.parseXML(`<text class="map_value" style="fill: ${sheme.at(1)};" \
             xmlns="http://www.w3.org/2000/svg" x="${e.x + 8}" dx="0" y="${e.y - 4}" _y="${e.y - 4}"\
             id="txt${e.name}">没有数据</text>`).documentElement;
 
         board.append(text);
 
-        let legend: HTMLElement = jQuery.parseXML(`<text class="map_legend" style="fill: green;" \
+        let legend: HTMLElement = jQuery.parseXML(`<text class="map_legend" style="fill: ${sheme.at(1)};" \
             xmlns="http://www.w3.org/2000/svg" x="${e.x + 8}" dx="${e.name.toString().length * -6}" y="${e.y - 22}" _y="${e.y - 22}"\
             id="lgd${e.name}">${e.name}</text>`).documentElement;
 
@@ -178,13 +180,14 @@ function drawPolyline() {
     $('#polyline').append('<svg></svg>');
     $('#polyline svg').attr('id', 'poly_svg').attr('xmlns', 'http://www.w3.org/2000/svg')
         .attr('height', '475px').attr('width', '500px');
-    axis = new Axis.Axis2d($('#poly_svg'));
-    axis.domain_x(2009, 2019).domain_y(0, max_province).set('margin', '0');
+    axis = new Visf.Axis.Axis2d($('#poly_svg'), new Visf.Color.Artists.Monet.Monet_bright());
+    axis.xScale('ordinal').among_x([2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019])
+        .domain_y(0, max_province * 1.2).set('margin', '0');
     axis.note(11, 'x');
-    axis.note(6, 'y');
+    axis.note(8, 'y');
     for (let i: number = 0; i < columnSet.length; i++) {
         let list: Array<any> = columnSet[i].data;
-        axis.path(list).css('stroke-width', '2px').css('stroke', 'green').css('opacity', 0.5);
-        axis.join('rect', list).css('fill', 'lawngreen');
+        axis.path(list).css('stroke-width', '2px').css('opacity', 0.5);
+        axis.join('circle', list);
     }
 }
