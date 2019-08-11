@@ -10,7 +10,7 @@ words_count = {}
 for y in range(2009, 2020):
     words = []
     words_count = {}
-    with open("../../dataWenchuan/distribution" + str(y) + ".dat", encoding='utf-8') as file:
+    with open("../../dataWenchuan/topic" + str(y) + ".dat", encoding='utf-8') as file:
         # try:
         #     while True:
         #         str = file.readline()
@@ -57,6 +57,8 @@ for y in range(2009, 2020):
 
         print("\n{}:".format(y))
         for plc in words_count:
+            if words_count[plc] < len(words_count) / 10:
+                continue
             print("[{}, {}]".format(plc, words_count[plc]))
             pass
 

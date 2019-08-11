@@ -226,7 +226,7 @@ if __name__ == "__main__":
     corpus = [dictionary.doc2bow(words) for words in words_list]
 
     # LDA模型，num_topics设置主题的个数
-    lda = models.ldamodel.LdaModel(corpus=corpus, id2word=dictionary, num_topics=10,
+    lda = models.ldamodel.LdaModel(corpus=corpus, id2word=dictionary, num_topics=20,
                                    decay=0.5, chunksize=200000)
 
     # LdaModel(num_terms=19, num_topics=2, decay=0.5, chunksize=2000)
