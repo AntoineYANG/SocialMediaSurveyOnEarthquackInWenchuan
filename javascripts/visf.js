@@ -15,7 +15,7 @@ var __extends = (this && this.__extends) || (function () {
  * @Author: Antoine YANG
  * @Date: 2019-08-08 15:15:25
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-08-10 22:27:06
+ * @Last Modified time: 2019-08-11 13:32:16
  */
 var Visf;
 (function (Visf) {
@@ -382,7 +382,8 @@ var Visf;
                 this.X_domain_min = min;
                 this.X_domain_max = max;
                 this.scale_x.domain(min, max);
-                this.note(5, 'x');
+                var ticks = this.X_ticks.length > 0 ? this.X_ticks.length : 5;
+                this.note(ticks, 'x');
                 this.update();
                 return this;
             };
@@ -397,7 +398,8 @@ var Visf;
                 this.Y_domain_min = min;
                 this.Y_domain_max = max;
                 this.scale_y.domain(min, max);
-                this.note(5, 'y');
+                var ticks = this.Y_ticks.length > 0 ? this.Y_ticks.length : 5;
+                this.note(ticks, 'y');
                 this.update();
                 return this;
             };
@@ -680,14 +682,38 @@ var Visf;
             */
             Axis2d.prototype.update = function () {
                 var _this = this;
-                this.X.attr('x1', this.padding[3])
-                    .attr('y1', this.padding[0] + this.h_)
-                    .attr('x2', this.padding[3] + this.w_)
-                    .attr('y2', this.padding[0] + this.h_);
-                this.Y.attr('x1', this.padding[3])
-                    .attr('y1', this.padding[0] + this.h_)
-                    .attr('x2', this.padding[3])
-                    .attr('y2', this.padding[0]);
+                if (this.scale_x instanceof Scale.OrdinalScale) {
+                    this.Y.attr('x1', this.padding[3])
+                        .attr('y1', this.padding[0] + this.h_)
+                        .attr('x2', this.padding[3])
+                        .attr('y2', this.padding[0]);
+                }
+                else if (this.X_domain_min != null && this.X_domain_max != null) {
+                    var x = this.X_domain_min <= 0 && this.X_domain_max >= 0
+                        ? this.fx(0)
+                        : this.X_domain_min > 0 && this.X_domain_max > 0
+                            ? this.padding[3] : this.padding[3] + this.w_;
+                    this.Y.attr('x1', x)
+                        .attr('y1', this.padding[0] + this.h_)
+                        .attr('x2', x)
+                        .attr('y2', this.padding[0]);
+                }
+                if (this.scale_y instanceof Scale.OrdinalScale) {
+                    this.X.attr('x1', this.padding[3])
+                        .attr('y1', this.padding[0] + this.h_)
+                        .attr('x2', this.padding[3] + this.w_)
+                        .attr('y2', this.padding[0] + this.h_);
+                }
+                else if (this.Y_domain_min != null && this.Y_domain_max != null) {
+                    var y = this.Y_domain_min <= 0 && this.Y_domain_max >= 0
+                        ? this.fy(0)
+                        : this.Y_domain_min > 0 && this.Y_domain_max > 0
+                            ? this.padding[0] + this.h_ : this.padding[0];
+                    this.X.attr('x1', this.padding[3])
+                        .attr('y1', y)
+                        .attr('x2', this.padding[3] + this.w_)
+                        .attr('y2', y);
+                }
                 var ticks = this.X_ticks.length;
                 if (ticks > 0)
                     this.note(ticks, 'x');
@@ -709,7 +735,7 @@ var Visf;
                         var data = e.attr('__data__').split(';');
                         var s = '';
                         var d = '';
-                        for (var i = 0; i < data.length; i++) {
+                        for (var i = 0; i < data.length - 1; i++) {
                             s = data[i];
                             var x = _this.fx(parseFloat(s.split(',')[0]));
                             var y = _this.fy(parseFloat(s.split(',')[1]));
@@ -769,11 +795,18 @@ var Visf;
                             e.remove();
                         });
                         this.X_ticks = [];
+                        var y = this.padding[0] + this.h_;
+                        if (!(this.scale_y instanceof Scale.OrdinalScale) && this.Y_domain_min != null && this.Y_domain_max != null) {
+                            y = this.Y_domain_min <= 0 && this.Y_domain_max >= 0
+                                ? this.fy(0)
+                                : this.Y_domain_min > 0 && this.Y_domain_max > 0
+                                    ? this.padding[0] + this.h_ : this.padding[0];
+                        }
                         if (this.scale_x instanceof Scale.OrdinalScale) {
                             step = parseInt((this.X_domain_list.length / ticks).toString());
                             step = step < 1 ? 1 : step > this.X_domain_list.length ? this.X_domain_list.length : step;
                             for (var i = 0; i < this.X_domain_list.length; i += step) {
-                                var svg = $(jQuery.parseXML("<text text-anchor=\"middle\"                                    style=\"fill-opacity: 1;\" __style__=\"tick_x\"                                    x=\"" + this.fx(this.X_domain_list[i]) + "\"                                     y=\"" + (this.padding[0] + this.h_) + "\" dy=\"18\"                                     xmlns=\"http://www.w3.org/2000/svg\">" + this.X_domain_list[i] + "</text>").documentElement);
+                                var svg = $(jQuery.parseXML("<text text-anchor=\"middle\"                                    style=\"fill-opacity: 1;\" __style__=\"tick_x\"                                    x=\"" + this.fx(this.X_domain_list[i]) + "\"                                     y=\"" + y + "\" dy=\"18\"                                     xmlns=\"http://www.w3.org/2000/svg\">" + this.X_domain_list[i] + "</text>").documentElement);
                                 if (this.theme === null)
                                     svg.css('fill', 'black');
                                 else
@@ -788,7 +821,7 @@ var Visf;
                         level = levelof(step) - 1;
                         step = parseInt((step / Math.pow(10, level)).toString()) * Math.pow(10, level);
                         for (var i = 0; i < ticks; i++) {
-                            var svg = $(jQuery.parseXML("<text text-anchor=\"middle\"                                style=\"fill-opacity: 1;\" __style__=\"tick_x\"                                x=\"" + this.fx(this.X_domain_min + step * i) + "\"                                 y=\"" + (this.padding[0] + this.h_) + "\" dy=\"18\"                                 xmlns=\"http://www.w3.org/2000/svg\">" + (this.X_domain_min + step * i) + "</text>").documentElement);
+                            var svg = $(jQuery.parseXML("<text text-anchor=\"middle\"                                style=\"fill-opacity: 1;\" __style__=\"tick_x\"                                x=\"" + this.fx(this.X_domain_min + step * i) + "\"                                 y=\"" + y + "\" dy=\"18\"                                 xmlns=\"http://www.w3.org/2000/svg\">" + (this.X_domain_min + step * i) + "</text>").documentElement);
                             if (this.theme === null)
                                 svg.css('fill', 'black');
                             else
@@ -803,11 +836,18 @@ var Visf;
                             e.remove();
                         });
                         this.Y_ticks = [];
+                        var x = this.padding[3];
+                        if (!(this.scale_x instanceof Scale.OrdinalScale) && this.X_domain_min != null && this.X_domain_max != null) {
+                            x = this.X_domain_min <= 0 && this.X_domain_max >= 0
+                                ? this.fx(0)
+                                : this.X_domain_min > 0 && this.X_domain_max > 0
+                                    ? this.padding[3] : this.padding[3] + this.w_;
+                        }
                         if (this.scale_y instanceof Scale.OrdinalScale) {
                             step = parseInt((this.Y_domain_list.length / ticks).toString());
                             step = step < 1 ? 1 : step > this.Y_domain_list.length ? this.Y_domain_list.length : step;
                             for (var i = 0; i < this.Y_domain_list.length; i += step) {
-                                var svg = $(jQuery.parseXML("<text text-anchor=\"end\"                                    style=\"fill-opacity: 1;\" __style__=\"tick_y\"                                    x=\"" + this.padding[3] + "\" dx=\"-6\"                                     y=\"" + this.fy(this.Y_domain_list[i]) + "\"                                    xmlns=\"http://www.w3.org/2000/svg\">" + this.Y_domain_list[i] + "</text>").documentElement);
+                                var svg = $(jQuery.parseXML("<text text-anchor=\"end\"                                    style=\"fill-opacity: 1;\" __style__=\"tick_y\"                                    x=\"" + x + "\" dx=\"-6\"                                     y=\"" + this.fy(this.Y_domain_list[i]) + "\"                                    xmlns=\"http://www.w3.org/2000/svg\">" + this.Y_domain_list[i] + "</text>").documentElement);
                                 if (this.theme === null)
                                     svg.css('fill', 'black');
                                 else
@@ -822,7 +862,7 @@ var Visf;
                         level = levelof(step) - 1;
                         step = parseInt((step / Math.pow(10, level)).toString()) * Math.pow(10, level);
                         for (var i = 0; i < ticks; i++) {
-                            var svg = $(jQuery.parseXML("<text text-anchor=\"end\"                                style=\"fill-opacity: 1;\" __style__=\"tick_y\"                                x=\"" + this.padding[3] + "\" dx=\"-6\"                                 y=\"" + this.fy(this.Y_domain_min + step * i) + "\"                                xmlns=\"http://www.w3.org/2000/svg\">" + (this.Y_domain_min + step * i) + "</text>").documentElement);
+                            var svg = $(jQuery.parseXML("<text text-anchor=\"end\"                                style=\"fill-opacity: 1;\" __style__=\"tick_y\"                                x=\"" + x + "\" dx=\"-6\"                                 y=\"" + this.fy(this.Y_domain_min + step * i) + "\"                                xmlns=\"http://www.w3.org/2000/svg\">" + (this.Y_domain_min + step * i) + "</text>").documentElement);
                             if (this.theme === null)
                                 svg.css('fill', 'black');
                             else

@@ -2,7 +2,7 @@
  * @Author: Antoine YANG 
  * @Date: 2019-08-08 15:15:25 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-08-10 22:27:06
+ * @Last Modified time: 2019-08-11 13:32:16
  */
 namespace Visf {
     export namespace Color {
@@ -478,7 +478,8 @@ namespace Visf {
                 this.X_domain_min = min;
                 this.X_domain_max = max;
                 this.scale_x.domain(min, max);
-                this.note(5, 'x');
+                let ticks: number = this.X_ticks.length > 0 ? this.X_ticks.length : 5;
+                this.note(ticks, 'x');
                 this.update();
                 return this;
             }
@@ -494,7 +495,8 @@ namespace Visf {
                 this.Y_domain_min = min;
                 this.Y_domain_max = max;
                 this.scale_y.domain(min, max);
-                this.note(5, 'y');
+                let ticks: number = this.Y_ticks.length > 0 ? this.Y_ticks.length : 5;
+                this.note(ticks, 'y');
                 this.update();
                 return this;
             }
@@ -785,14 +787,38 @@ namespace Visf {
             * @memberof Axis
             */
             update(): void {
-                this.X.attr('x1', this.padding[3])
-                    .attr('y1', this.padding[0] + this.h_)
-                    .attr('x2', this.padding[3] + this.w_)
-                    .attr('y2', this.padding[0] + this.h_);
-                this.Y.attr('x1', this.padding[3])
-                    .attr('y1', this.padding[0] + this.h_)
-                    .attr('x2', this.padding[3])
-                    .attr('y2', this.padding[0]);
+                if (this.scale_x instanceof Scale.OrdinalScale) {
+                    this.Y.attr('x1', this.padding[3])
+                        .attr('y1', this.padding[0] + this.h_)
+                        .attr('x2', this.padding[3])
+                        .attr('y2', this.padding[0]);
+                }
+                else if (this.X_domain_min != null && this.X_domain_max != null) {
+                    let x: number = this.X_domain_min <= 0 && this.X_domain_max >= 0
+                        ? this.fx(0)
+                        : this.X_domain_min > 0 && this.X_domain_max > 0
+                            ? this.padding[3] : this.padding[3] + this.w_;
+                    this.Y.attr('x1', x)
+                        .attr('y1', this.padding[0] + this.h_)
+                        .attr('x2', x)
+                        .attr('y2', this.padding[0]);
+                }
+                if (this.scale_y instanceof Scale.OrdinalScale) {
+                    this.X.attr('x1', this.padding[3])
+                        .attr('y1', this.padding[0] + this.h_)
+                        .attr('x2', this.padding[3] + this.w_)
+                        .attr('y2', this.padding[0] + this.h_);
+                }
+                else if (this.Y_domain_min != null && this.Y_domain_max != null) {
+                    let y: number = this.Y_domain_min <= 0 && this.Y_domain_max >= 0
+                        ? this.fy(0)
+                        : this.Y_domain_min > 0 && this.Y_domain_max > 0
+                            ? this.padding[0] + this.h_ : this.padding[0];
+                    this.X.attr('x1', this.padding[3])
+                        .attr('y1', y)
+                        .attr('x2', this.padding[3] + this.w_)
+                        .attr('y2', y);
+                }
                 let ticks: number = this.X_ticks.length;
                 if (ticks > 0)
                     this.note(ticks, 'x');
@@ -814,7 +840,7 @@ namespace Visf {
                         let data: Array<string> = e.attr('__data__').split(';');
                         let s: string = '';
                         let d: string = '';
-                        for (let i: number = 0; i < data.length; i++) {
+                        for (let i: number = 0; i < data.length - 1; i++) {
                             s = data[i];
                             let x: number = this.fx(parseFloat(s.split(',')[0]));
                             let y: number = this.fy(parseFloat(s.split(',')[1]));
@@ -874,6 +900,14 @@ namespace Visf {
                             e.remove();
                         });
                         this.X_ticks = [];
+
+                        let y: number = this.padding[0] + this.h_;
+                        if (!(this.scale_y instanceof Scale.OrdinalScale) && this.Y_domain_min != null && this.Y_domain_max != null) {
+                            y = this.Y_domain_min <= 0 && this.Y_domain_max >= 0
+                                ? this.fy(0)
+                                : this.Y_domain_min > 0 && this.Y_domain_max > 0
+                                    ? this.padding[0] + this.h_ : this.padding[0];
+                        }
                         if (this.scale_x instanceof Scale.OrdinalScale) {
                             step = parseInt((this.X_domain_list.length / ticks).toString());
                             step = step < 1 ? 1 : step > this.X_domain_list.length ? this.X_domain_list.length : step;
@@ -881,7 +915,7 @@ namespace Visf {
                                 let svg: JQuery<HTMLElement> = $(jQuery.parseXML(`<text text-anchor="middle"\
                                     style="fill-opacity: 1;" __style__="tick_x"\
                                     x="${this.fx(this.X_domain_list[i])}" \
-                                    y="${this.padding[0] + this.h_}" dy="18" \
+                                    y="${y}" dy="18" \
                                     xmlns="http://www.w3.org/2000/svg">${this.X_domain_list[i]}</text>`).documentElement);
                                 if (this.theme === null)
                                     svg.css('fill', 'black');
@@ -900,7 +934,7 @@ namespace Visf {
                             let svg: JQuery<HTMLElement> = $(jQuery.parseXML(`<text text-anchor="middle"\
                                 style="fill-opacity: 1;" __style__="tick_x"\
                                 x="${this.fx(this.X_domain_min + step * i)}" \
-                                y="${this.padding[0] + this.h_}" dy="18" \
+                                y="${y}" dy="18" \
                                 xmlns="http://www.w3.org/2000/svg">${this.X_domain_min + step * i}</text>`).documentElement);
                             if (this.theme === null)
                                 svg.css('fill', 'black');
@@ -916,13 +950,20 @@ namespace Visf {
                             e.remove();
                         });
                         this.Y_ticks = [];
+                        let x: number = this.padding[3];
+                        if (!(this.scale_x instanceof Scale.OrdinalScale) && this.X_domain_min != null && this.X_domain_max != null) {
+                            x = this.X_domain_min <= 0 && this.X_domain_max >= 0
+                                ? this.fx(0)
+                                : this.X_domain_min > 0 && this.X_domain_max > 0
+                                    ? this.padding[3] : this.padding[3] + this.w_;
+                        }
                         if (this.scale_y instanceof Scale.OrdinalScale) {
                             step = parseInt((this.Y_domain_list.length / ticks).toString());
                             step = step < 1 ? 1 : step > this.Y_domain_list.length ? this.Y_domain_list.length : step;
                             for (let i: number = 0; i < this.Y_domain_list.length; i += step) {
                                 let svg: JQuery<HTMLElement> = $(jQuery.parseXML(`<text text-anchor="end"\
                                     style="fill-opacity: 1;" __style__="tick_y"\
-                                    x="${this.padding[3]}" dx="-6" \
+                                    x="${x}" dx="-6" \
                                     y="${this.fy(this.Y_domain_list[i])}"\
                                     xmlns="http://www.w3.org/2000/svg">${this.Y_domain_list[i]}</text>`).documentElement);
                                 if (this.theme === null)
@@ -941,7 +982,7 @@ namespace Visf {
                         for (let i: number = 0; i < ticks; i++) {
                             let svg: JQuery<HTMLElement> = $(jQuery.parseXML(`<text text-anchor="end"\
                                 style="fill-opacity: 1;" __style__="tick_y"\
-                                x="${this.padding[3]}" dx="-6" \
+                                x="${x}" dx="-6" \
                                 y="${this.fy(this.Y_domain_min + step * i)}"\
                                 xmlns="http://www.w3.org/2000/svg">${this.Y_domain_min + step * i}</text>`).documentElement);
                             if (this.theme === null)
