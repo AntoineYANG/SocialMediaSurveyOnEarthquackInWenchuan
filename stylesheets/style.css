@@ -13,6 +13,7 @@ body {
     height: 846px;
     background: #ddd;
     margin: 8px;
+    overflow: hidden;
 }
 
 button {

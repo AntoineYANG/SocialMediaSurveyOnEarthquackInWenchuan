@@ -2,7 +2,7 @@
  * @Author: Antoine YANG
  * @Date: 2019-08-08 15:15:09
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-08-10 21:43:01
+ * @Last Modified time: 2019-08-12 14:55:39
  */
 /// <reference path="./visf.ts" />
 // 全局变量
@@ -10,9 +10,11 @@
     var YEAR = 2009;
     var WORDLIMIT = 20;
     var data_province = {};
+    var data_topics = [];
     var max_province = 0;
     var columnSet = [];
     var axis = null;
+    var axis2 = null;
 }
 // 文件路径
 {
@@ -127,6 +129,10 @@
         drawColumn(YEAR);
         drawPolyline();
     });
+    $.getJSON("../data/topic.json", function (data) {
+        data_topics = data;
+        drawTopic();
+    });
 })();
 // 地图上的柱形图
 function drawColumn(year) {
@@ -156,7 +162,7 @@ function drawPolyline() {
     $('#polyline').append('<svg></svg>');
     $('#polyline svg').attr('id', 'poly_svg').attr('xmlns', 'http://www.w3.org/2000/svg')
         .attr('height', '475px').attr('width', '500px');
-    axis = new Visf.Axis.Axis2d($('#poly_svg'), new Visf.Color.Artists.Monet.Monet_bright());
+    axis = new Visf.Axis.Axis2d($('#poly_svg'), new Visf.Color.Artists.Matisse.Matisse_dark());
     axis.xScale('ordinal').among_x([2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019])
         .domain_y(0, max_province * 1.2).set('margin', '0');
     axis.note(11, 'x');
@@ -165,5 +171,39 @@ function drawPolyline() {
         var list = columnSet[i].data;
         axis.path(list).css('stroke-width', '2px').css('opacity', 0.5);
         axis.join('circle', list);
+    }
+}
+// 主题统计
+function drawTopic() {
+    $('#topiccount').append('<svg></svg>');
+    $('#topiccount svg').attr('id', 'topic_svg').attr('xmlns', 'http://www.w3.org/2000/svg')
+        .attr('height', '274px').attr('width', '500px');
+    axis2 = new Visf.Axis.Axis2d($('#topic_svg'), new Visf.Color.Artists.Matisse.Matisse_dark());
+    axis2.xScale('ordinal').among_x([2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019])
+        .domain_y(0, 100).set('margin', '0');
+    axis2.note(11, 'x');
+    axis2.note(5, 'y');
+    var sum = [];
+    for (var y = 2009; y < 2020; y++) {
+        sum.push(0);
+    }
+    for (var i = 0; i < data_topics.length; i++) {
+        for (var d = 0; d < 11; d++) {
+            sum[d] += data_topics[i]["data"][d][0];
+        }
+    }
+    for (var i = 0; i < data_topics.length; i++) {
+        var list = [];
+        for (var d = 0; d < 11; d++) {
+            list.push([2009 + d, data_topics[i]["data"][d][0] * 100 / sum[d]]);
+        }
+        axis2.path(list).css('stroke-width', '2px').css('opacity', 0.5);
+        axis2.join('rect', list);
+        for (var s = 0; s < 11; s++) {
+            if (list[s][1] > 25) {
+                axis2.addtext(data_topics[i]["topic"], 2009 + s, list[s][1]).attr('text-anchor', 'end');
+                break;
+            }
+        }
     }
 }

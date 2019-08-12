@@ -15,7 +15,7 @@ var __extends = (this && this.__extends) || (function () {
  * @Author: Antoine YANG
  * @Date: 2019-08-08 15:15:25
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-08-11 13:32:16
+ * @Last Modified time: 2019-08-12 14:51:49
  */
 var Visf;
 (function (Visf) {
@@ -633,7 +633,7 @@ var Visf;
                     data[_i - 1] = arguments[_i];
                 }
                 var fill = this.theme === null ? 'black' : this.theme.getOutstand();
-                var svg = $(jQuery.parseXML("<text                    style=\"fill: " + fill + "; fill-opacity: 1;\"                     xmlns=\"http://www.w3.org/2000/svg\">" + text + "</pa>").documentElement);
+                var svg = $(jQuery.parseXML("<text                    style=\"fill: " + fill + "; fill-opacity: 1;\"                     xmlns=\"http://www.w3.org/2000/svg\">" + text + "</text>").documentElement);
                 svg.attr('__style__', 'point');
                 svg.attr('__tab__', 'text');
                 svg.attr('__serie__', this.series);
