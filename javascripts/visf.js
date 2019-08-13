@@ -15,7 +15,7 @@ var __extends = (this && this.__extends) || (function () {
  * @Author: Antoine YANG
  * @Date: 2019-08-08 15:15:25
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-08-12 14:51:49
+ * @Last Modified time: 2019-08-14 00:52:47
  */
 var Visf;
 (function (Visf) {
@@ -350,11 +350,30 @@ var Visf;
              * * `log`
              * * `ordinal`
              * * `power`
-             * @returns {Axis2d} the object itself
+             * @param {any} [content=null] as style defined...
+             * * `linear` useless
+             * * `log` base of the logarithm
+             * * `ordinal` domain list of ordinal scale
+             * * `power`
+             * @returns {Axis2d}
              * @memberof Axis2d
              */
-            Axis2d.prototype.xScale = function (style) {
-                this.scale_x = Scale.getInstance(style).range(this.padding[3], this.padding[3] + this.w_);
+            Axis2d.prototype.xScale = function (style, content) {
+                if (content === void 0) { content = null; }
+                this.scale_x = Scale.getInstance(style)
+                    .domain(this.X_domain_min, this.X_domain_max).range(this.padding[3], this.padding[3] + this.w_);
+                if (content == null) {
+                    this.update();
+                    return this;
+                }
+                if (style == 'ordinal') {
+                    this.scale_x.among(content);
+                    this.X_domain_list = content;
+                }
+                else if (style == 'log') {
+                    this.scale_x.base(content);
+                }
+                this.update();
                 return this;
             };
             /**
@@ -364,11 +383,30 @@ var Visf;
              * * `log`
              * * `ordinal`
              * * `power`
-             * @returns {Axis2d} the object itself
+             * @param {any} [content=null] as style defined...
+             * * `linear` useless
+             * * `log` base of the logarithm
+             * * `ordinal` domain list of ordinal scale
+             * * `power`
+             * @returns {Axis2d}
              * @memberof Axis2d
              */
-            Axis2d.prototype.yScale = function (style) {
-                this.scale_y = Scale.getInstance(style).range(this.padding[0] + this.h_, this.padding[0]);
+            Axis2d.prototype.yScale = function (style, content) {
+                if (content === void 0) { content = null; }
+                this.scale_y = Scale.getInstance(style)
+                    .domain(this.Y_domain_min, this.Y_domain_max).range(this.padding[0] + this.h_, this.padding[0]);
+                if (content == null) {
+                    this.update();
+                    return this;
+                }
+                if (style == 'ordinal') {
+                    this.scale_y.among(content);
+                    this.Y_domain_list = content;
+                }
+                else if (style == 'log') {
+                    this.scale_y.base(content);
+                }
+                this.update();
                 return this;
             };
             /**
@@ -401,42 +439,6 @@ var Visf;
                 var ticks = this.Y_ticks.length > 0 ? this.Y_ticks.length : 5;
                 this.note(ticks, 'y');
                 this.update();
-                return this;
-            };
-            /**
-             *Sets the domain list of the ordinal scale x.
-            * @param {Array<number>} list input list
-            * @returns {Axis2d} the object itself
-            * @memberof Axis2d
-            */
-            Axis2d.prototype.among_x = function (list) {
-                if (this.scale_x instanceof Scale.OrdinalScale) {
-                    this.X_domain_list = list;
-                    this.scale_x.among(list);
-                    this.note(list.length, 'x');
-                    this.update();
-                }
-                else {
-                    console.error('Scale x is not a legal OrdinalScale type. ');
-                }
-                return this;
-            };
-            /**
-             *Sets the domain list of the ordinal scale y.
-            * @param {Array<number>} list input list
-            * @returns {Axis2d} the object itself
-            * @memberof Axis2d
-            */
-            Axis2d.prototype.among_y = function (list) {
-                if (this.scale_y instanceof Scale.OrdinalScale) {
-                    this.Y_domain_list = list;
-                    this.scale_y.among(list);
-                    this.note(list.length, 'y');
-                    this.update();
-                }
-                else {
-                    console.error('Scale y is not a legal OrdinalScale type. ');
-                }
                 return this;
             };
             /**
@@ -932,8 +934,10 @@ var Visf;
                     return new LinearScale();
                 case 'ordinal':
                     return new OrdinalScale();
+                case 'log':
+                    return new LogScale();
             }
-            return;
+            return null;
         }
         Scale.getInstance = getInstance;
         /**
@@ -1044,7 +1048,7 @@ var Visf;
         }());
         Scale.LinearScale = LinearScale;
         /**
-         *Linear scale
+         *Ordinal scale
          * @export
          * @class OrdinalScale
          * @implements {Scale}
@@ -1066,8 +1070,7 @@ var Visf;
             * @memberof OrdinalScale
             */
             OrdinalScale.prototype.domain = function (min, max) {
-                throw Error('Method domain(number, number) is not supported for OrdinalScale object. \
-                    Try to use method among(Array<number>) instead.');
+                return this;
             };
             /**
              *Sets the allowed input value of the scale
@@ -1147,6 +1150,116 @@ var Visf;
             return OrdinalScale;
         }());
         Scale.OrdinalScale = OrdinalScale;
+        /**
+         *Logarithm scale
+        * @export
+        * @class LogScale
+        * @implements {Scale}
+        */
+        var LogScale = /** @class */ (function () {
+            function LogScale() {
+                this.domain_min = null;
+                this.domain_max = null;
+                this.range_min = null;
+                this.range_max = null;
+                this._base = Math.E;
+                this.out_of_range = Solution.forbidden;
+            }
+            /**
+             *Sets the input range of the scale.
+            * @param {number} min minimum of the input
+            * @param {number} max maximun of the input
+            * @returns {LogScale} the object itself
+            * @memberof LogScale
+            */
+            LogScale.prototype.domain = function (min, max) {
+                this.domain_min = min;
+                this.domain_max = max;
+                return this;
+            };
+            /**
+             *Sets the output range of the scale.
+            * @param {number} min minimum of the output
+            * @param {number} max maximun of the output
+            * @returns {LogScale} the object itself
+            * @memberof LogScale
+            */
+            LogScale.prototype.range = function (min, max) {
+                this.range_min = min;
+                this.range_max = max;
+                return this;
+            };
+            /**
+             *Sets the base of the logarithm.
+             * @param {number} b base
+             * @returns {LogScale} the object itself
+             * @memberof LogScale
+             */
+            LogScale.prototype.base = function (b) {
+                this._base = b;
+                return this;
+            };
+            /**
+             *Returns the projection of the input value.
+            * @param {number} val input
+            * @returns {number} project
+            * @memberof LogScale
+            */
+            LogScale.prototype.to = function (val) {
+                if (this.base == null || this.domain_min == null || this.domain_max == null
+                    || this.range_min == null || this.range_max == null) {
+                    console.error('This scale is not defined yet: ', this);
+                    return null;
+                }
+                var num = Math.log((val - this.domain_min) * (this._base - 1) / (this.domain_max - this.domain_min) + 1)
+                    / Math.log(this._base) * (this.range_max - this.range_min) + this.range_min;
+                if (num > this.range_max && num > this.range_min || num < this.range_max && num < this.range_min) {
+                    switch (this.out_of_range) {
+                        case Solution.hard:
+                            return num >= 0 ? num : null;
+                        case Solution.stuck:
+                            return num > num > this.range_max && num > this.range_min
+                                ? this.range_max > this.range_min ? this.range_max : this.range_min
+                                : num < this.range_max && num < this.range_min
+                                    ? this.range_max > this.range_min ? this.range_min : this.range_max
+                                    : num;
+                        case Solution.forbidden:
+                            console.warn("Received value " + val + " out of range: [" + this.domain_min + ", " + this.domain_max + "]");
+                            return null;
+                    }
+                }
+                return num;
+            };
+            /**
+             *Returns the calculation result of the possible input value of the projection.
+            * @param {number} cor projection value
+            * @returns {number} possible origin value
+            * @memberof LogScale
+            */
+            LogScale.prototype.from = function (cor) {
+                if (this.domain_min == null || this.domain_max == null || this.range_min == null || this.range_max == null) {
+                    console.error('This scale is not defined yet: ', this);
+                    return null;
+                }
+                return (Math.exp((cor - this.range_min) * Math.log(this._base) / (this.range_max - this.range_min)) - 1)
+                    * (this.domain_max - this.domain_min) / (this._base - 1) + this.domain_min;
+            };
+            /**
+             *Sets the principle to act when input data is out of range, default=forbidden.
+            * @param {Solution} s principle
+            * * `hard` — calculate it by the scale
+            * * `stuck` — regard it as the min / max value
+            * * `forbidden` — raise an error
+            * @returns {Scale} the object itself
+            * @memberof Scale
+            */
+            LogScale.prototype.handle = function (s) {
+                this.out_of_range = s;
+                return this;
+            };
+            return LogScale;
+        }());
+        Scale.LogScale = LogScale;
     })(Scale = Visf.Scale || (Visf.Scale = {}));
     /**
      *

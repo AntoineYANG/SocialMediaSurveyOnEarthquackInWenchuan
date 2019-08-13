@@ -2,7 +2,7 @@
  * @Author: Antoine YANG
  * @Date: 2019-08-08 15:15:09
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-08-12 14:55:39
+ * @Last Modified time: 2019-08-14 01:21:28
  */
 /// <reference path="./visf.ts" />
 // 全局变量
@@ -161,9 +161,9 @@ function drawColumn(year) {
 function drawPolyline() {
     $('#polyline').append('<svg></svg>');
     $('#polyline svg').attr('id', 'poly_svg').attr('xmlns', 'http://www.w3.org/2000/svg')
-        .attr('height', '475px').attr('width', '500px');
+        .attr('height', '274px').attr('width', '500px');
     axis = new Visf.Axis.Axis2d($('#poly_svg'), new Visf.Color.Artists.Matisse.Matisse_dark());
-    axis.xScale('ordinal').among_x([2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019])
+    axis.xScale('ordinal', [2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019])
         .domain_y(0, max_province * 1.2).set('margin', '0');
     axis.note(11, 'x');
     axis.note(8, 'y');
@@ -177,10 +177,10 @@ function drawPolyline() {
 function drawTopic() {
     $('#topiccount').append('<svg></svg>');
     $('#topiccount svg').attr('id', 'topic_svg').attr('xmlns', 'http://www.w3.org/2000/svg')
-        .attr('height', '274px').attr('width', '500px');
+        .attr('height', '475px').attr('width', '500px');
     axis2 = new Visf.Axis.Axis2d($('#topic_svg'), new Visf.Color.Artists.Matisse.Matisse_dark());
-    axis2.xScale('ordinal').among_x([2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019])
-        .domain_y(0, 100).set('margin', '0');
+    axis2.xScale('ordinal', [2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019]);
+    axis2.yScale('log').domain_y(0, 100).set('margin', '0');
     axis2.note(11, 'x');
     axis2.note(5, 'y');
     var sum = [];
@@ -192,18 +192,41 @@ function drawTopic() {
             sum[d] += data_topics[i]["data"][d][0];
         }
     }
-    for (var i = 0; i < data_topics.length; i++) {
+    var _loop_2 = function (i) {
         var list = [];
         for (var d = 0; d < 11; d++) {
+            // if (data_topics[i]["data"][d][0] > 0)
             list.push([2009 + d, data_topics[i]["data"][d][0] * 100 / sum[d]]);
         }
-        axis2.path(list).css('stroke-width', '2px').css('opacity', 0.5);
-        axis2.join('rect', list);
-        for (var s = 0; s < 11; s++) {
-            if (list[s][1] > 25) {
-                axis2.addtext(data_topics[i]["topic"], 2009 + s, list[s][1]).attr('text-anchor', 'end');
-                break;
+        var path = axis2.path(list).css('stroke-width', '2px').css('opacity', 0.3).attr('id', "path" + i)
+            .hover(function () {
+            path.css('opacity', 1.0).css('stroke-width', '5px');
+            $("." + path.attr('id')).css('visibility', 'visible');
+        })
+            .mouseout(function () {
+            path.css('opacity', 0.3).css('stroke-width', '2px');
+            $("." + path.attr('id')).css('visibility', 'hidden');
+        });
+        var color = path.css('stroke');
+        var rect = axis2.join('rect', list);
+        rect.css('visibility', 'hidden').attr('class', "path" + i)
+            .css('stroke', (new Visf.Color.Artists.Matisse.Matisse_dark()).getOutstand()).css('fill', color);
+        var max = list[0][1];
+        var idx = 0;
+        for (var s = 1; s < list.length; s++) {
+            if (list[s][1] > max) {
+                max = list[s][1];
+                idx = s;
             }
         }
+        var text = axis2.addtext(data_topics[i]["topic"], 2009 + idx, list[idx][1]);
+        text.attr('class', "path" + i)
+            .attr('text-anchor', 'end')
+            .attr('dx', '-6px')
+            .css('fill', color)
+            .css('visibility', 'hidden');
+    };
+    for (var i = 0; i < data_topics.length; i++) {
+        _loop_2(i);
     }
 }
