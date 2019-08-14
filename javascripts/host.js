@@ -15,6 +15,8 @@
     var columnSet = [];
     var axis = null;
     var axis2 = null;
+    var axis3 = null;
+    var cube = null;
 }
 // 文件路径
 {
@@ -229,4 +231,23 @@ function drawTopic() {
     for (var i = 0; i < data_topics.length; i++) {
         _loop_2(i);
     }
+    $('#cube').append('<svg></svg>');
+    $('#cube svg').attr('id', 'cube_svg').attr('xmlns', 'http://www.w3.org/2000/svg')
+        .attr('height', '274px').attr('width', '735px');
+    axis3 = new Visf.Axis.Axis2d($('#cube_svg'), new Visf.Color.Artists.Matisse.Matisse_dark());
+    axis3.domain_x(2009, 2020);
+    axis3.domain_y(0, 100).set('margin', '0');
+    axis3.note(11, 'x');
+    axis3.note(5, 'y');
+    var _l = [];
+    data_topics.forEach(function (t) {
+        for (var i = 0; i < t['data'].length; i++) {
+            var m = { value: t['topic'] };
+            m['time'] = 2009 + i;
+            m['topic'] = t['data'][i][1];
+            m['location'] = Math.random();
+            _l.push(m);
+        }
+    });
+    cube = new Visf.Struct.Cube(['time', 'location', 'topic']).add(_l);
 }

@@ -203,20 +203,25 @@ stopwords = ["迎", "费", "最", "请", "再", "微博", "记得", "天", "人"
 
 now = 0
 
-with open("../../dataWenchuan/word2019.dat", encoding='utf-8') as file:
-    fout = open("../../dataWenchuan/set2019.dat", 'w', encoding='utf-8')
-    all_ = file.readlines()
-    lines = len(all_)
-    for each in all_:
-        words = jieba.cut(each)
-        words_after = (n for n in words if not n.isspace())
-        words_box = (n for n in words_after if n not in stopwords)
-        mixture = "/".join(words_box)
-        if not mixture.endswith("/"):
-            mixture += "/"
-        fout.write(mixture)
-        now += 1
-        print(now/lines)
+fout = open("../../dataWenchuan/rw.dat".format(y), 'w', encoding='utf-8')
+
+for y in range(2009, 2020):
+    with open("../../dataWenchuan/read{}.dat".format(y), encoding='utf-8') as file:
+        all_ = file.readlines()
+        lines = len(all_)
+        now = 0
+        for each in all_:
+            words = jieba.cut(each)
+            words_after = (n for n in words if not n.isspace())
+            words_box = (n for n in words_after if n not in stopwords)
+            mixture = "/".join(words_box)
+            if not mixture.endswith("/"):
+                mixture += "/"
+            fout.write(mixture)
+            now += 1
+            print(now/lines)
+            pass
         pass
-    fout.close()
-    pass
+
+fout.close()
+

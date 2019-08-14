@@ -355,7 +355,7 @@ var Visf;
              * * `log` base of the logarithm
              * * `ordinal` domain list of ordinal scale
              * * `power`
-             * @returns {Axis2d}
+             * @returns {Axis2d} the object itself
              * @memberof Axis2d
              */
             Axis2d.prototype.xScale = function (style, content) {
@@ -373,6 +373,9 @@ var Visf;
                 else if (style == 'log') {
                     this.scale_x.base(content);
                 }
+                else if (style == 'power') {
+                    this.scale_x.base(content);
+                }
                 this.update();
                 return this;
             };
@@ -388,7 +391,7 @@ var Visf;
              * * `log` base of the logarithm
              * * `ordinal` domain list of ordinal scale
              * * `power`
-             * @returns {Axis2d}
+             * @returns {Axis2d} the object itself
              * @memberof Axis2d
              */
             Axis2d.prototype.yScale = function (style, content) {
@@ -404,6 +407,9 @@ var Visf;
                     this.Y_domain_list = content;
                 }
                 else if (style == 'log') {
+                    this.scale_y.base(content);
+                }
+                else if (style == 'power') {
                     this.scale_y.base(content);
                 }
                 this.update();
@@ -936,6 +942,8 @@ var Visf;
                     return new OrdinalScale();
                 case 'log':
                     return new LogScale();
+                case 'power':
+                    return new PowerScale();
             }
             return null;
         }
@@ -1260,9 +1268,257 @@ var Visf;
             return LogScale;
         }());
         Scale.LogScale = LogScale;
+        /**
+         *Power scale
+        * @export
+        * @class PowerScale
+        * @implements {Scale}
+        */
+        var PowerScale = /** @class */ (function () {
+            function PowerScale() {
+                this.domain_min = null;
+                this.domain_max = null;
+                this.range_min = null;
+                this.range_max = null;
+                this._base = Math.E;
+                this.out_of_range = Solution.forbidden;
+            }
+            /**
+             *Sets the input range of the scale.
+            * @param {number} min minimum of the input
+            * @param {number} max maximun of the input
+            * @returns {PowerScale} the object itself
+            * @memberof PowerScale
+            */
+            PowerScale.prototype.domain = function (min, max) {
+                this.domain_min = min;
+                this.domain_max = max;
+                return this;
+            };
+            /**
+             *Sets the output range of the scale.
+            * @param {number} min minimum of the output
+            * @param {number} max maximun of the output
+            * @returns {PowerScale} the object itself
+            * @memberof PowerScale
+            */
+            PowerScale.prototype.range = function (min, max) {
+                this.range_min = min;
+                this.range_max = max;
+                return this;
+            };
+            /**
+             *Sets the base of the pow.
+                * @param {number} b base
+                * @returns {PowerScale} the object itself
+                * @memberof PowerScale
+                */
+            PowerScale.prototype.base = function (b) {
+                this._base = b;
+                return this;
+            };
+            /**
+             *Returns the projection of the input value.
+            * @param {number} val input
+            * @returns {number} project
+            * @memberof PowerScale
+            */
+            PowerScale.prototype.to = function (val) {
+                if (this.base == null || this.domain_min == null || this.domain_max == null
+                    || this.range_min == null || this.range_max == null) {
+                    console.error('This scale is not defined yet: ', this);
+                    return null;
+                }
+                var num = (Math.pow(this._base, (val - this.domain_min) / (this.domain_max - this.domain_min)) - 1)
+                    / (this._base - 1) * (this.range_max - this.range_min) + this.range_min;
+                if (num > this.range_max && num > this.range_min || num < this.range_max && num < this.range_min) {
+                    switch (this.out_of_range) {
+                        case Solution.hard:
+                            return num >= 0 ? num : null;
+                        case Solution.stuck:
+                            return num > num > this.range_max && num > this.range_min
+                                ? this.range_max > this.range_min ? this.range_max : this.range_min
+                                : num < this.range_max && num < this.range_min
+                                    ? this.range_max > this.range_min ? this.range_min : this.range_max
+                                    : num;
+                        case Solution.forbidden:
+                            console.warn("Received value " + val + " out of range: [" + this.domain_min + ", " + this.domain_max + "]");
+                            return null;
+                    }
+                }
+                return num;
+            };
+            /**
+             *Returns the calculation result of the possible input value of the projection.
+            * @param {number} cor projection value
+            * @returns {number} possible origin value
+            * @memberof PowerScale
+            */
+            PowerScale.prototype.from = function (cor) {
+                if (this.domain_min == null || this.domain_max == null || this.range_min == null || this.range_max == null) {
+                    console.error('This scale is not defined yet: ', this);
+                    return null;
+                }
+                return Math.log((cor - this.range_min) * (this._base - 1) / (this.range_max - this.range_min) + 1) / Math.log(this._base)
+                    * (this.domain_max - this.domain_min) + this.domain_min;
+            };
+            /**
+             *Sets the principle to act when input data is out of range, default=forbidden.
+            * @param {Solution} s principle
+            * * `hard` — calculate it by the scale
+            * * `stuck` — regard it as the min / max value
+            * * `forbidden` — raise an error
+            * @returns {Scale} the object itself
+            * @memberof Scale
+            */
+            PowerScale.prototype.handle = function (s) {
+                this.out_of_range = s;
+                return this;
+            };
+            return PowerScale;
+        }());
+        Scale.PowerScale = PowerScale;
     })(Scale = Visf.Scale || (Visf.Scale = {}));
+    var Struct;
+    (function (Struct) {
+        /**
+         *Multidimensional data cube.
+         * @export
+         * @class Cube
+         */
+        var Cube = /** @class */ (function () {
+            function Cube(l) {
+                this.maxDimension = l.length;
+                this.label = l;
+                this.data = [];
+            }
+            /**
+             *Adds one or more data into the cube.
+             * @param {Array<object>} obj data
+             * @returns {Cube} the object itself
+             * @memberof Cube
+             */
+            Cube.prototype.add = function (obj) {
+                for (var i in obj) {
+                    var o = obj[i];
+                    if (o['value'] == null)
+                        continue;
+                    var m = { value: o['value'] };
+                    var flag = true;
+                    for (var l in this.label) {
+                        if (o[this.label[l]] == null) {
+                            flag = false;
+                            break;
+                        }
+                        m[this.label[l]] = o[this.label[l]];
+                    }
+                    if (flag)
+                        this.data.push(m);
+                }
+                return this;
+            };
+            /**
+             *Slices old cube at some certain dimensions, returns a new cube.
+             * @param {object} limit dimension limit
+             * @returns {Cube} new cube
+             * @memberof Cube
+             */
+            Cube.prototype.slice = function (limit) {
+                var labelNew = [];
+                this.label.forEach(function (l) {
+                    for (var n in limit) {
+                        if (n == l)
+                            return;
+                    }
+                    labelNew.push(l);
+                });
+                var c = new Cube(labelNew);
+                this.data.forEach(function (d) {
+                    for (var l in limit) {
+                        if (d[l] != null && limit[l] != d[l])
+                            return;
+                    }
+                    c.add([d]);
+                });
+                return c;
+            };
+            /**
+             *Projects old cube into a lower-dimensional space, returns a new cube.
+             * @param {...Array<string>} dimension dimensions needed
+             * @returns {Cube} new cube
+             * @memberof Cube
+             */
+            Cube.prototype.project = function () {
+                var dimension = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    dimension[_i] = arguments[_i];
+                }
+                var labelNew = [];
+                this.label.forEach(function (l) {
+                    for (var n in dimension) {
+                        if (dimension[n] == l)
+                            labelNew.push(l);
+                    }
+                });
+                var c = new Cube(labelNew);
+                c.add(this.data);
+                return c;
+            };
+            /**
+             *Projects 2d cube on a 2d axis.
+             * @param {Axis.Axis2d} axis target axis
+             * @returns {boolean} whether the projection is completed or not
+             * @memberof Cube
+             */
+            Cube.prototype.displayOn = function (axis) {
+                var _this = this;
+                if (this.maxDimension != 2) {
+                    console.error('Dimension error: not 2');
+                    return false;
+                }
+                axis.clear();
+                var list = [];
+                var x_min = this.data[0][this.label[0]];
+                var x_max = this.data[0][this.label[0]];
+                var y_min = this.data[0][this.label[1]];
+                var y_max = this.data[0][this.label[1]];
+                this.data.forEach(function (d) {
+                    list.push([d[_this.label[0]], d[_this.label[1]]]);
+                    if (d[_this.label[0]] < x_min)
+                        x_min = d[_this.label[0]];
+                    if (d[_this.label[0]] > x_max)
+                        x_max = d[_this.label[0]];
+                    if (d[_this.label[1]] < y_min)
+                        y_min = d[_this.label[1]];
+                    if (d[_this.label[1]] > y_max)
+                        y_max = d[_this.label[1]];
+                });
+                // axis.xScale('linear').yScale('linear').domain_x(x_min, x_max).domain_y(y_min, y_max).join('circle', list);
+                axis.domain_x(x_min, x_max).domain_y(y_min, y_max).join('circle', list);
+                this.data.forEach(function (d) {
+                    axis.addtext(d['value'], d[_this.label[0]], d[_this.label[1]]);
+                });
+                return true;
+            };
+            /**
+             *Filts the data in the cube, returns a new cube.
+             * @param {() => boolean} callback callback function
+             * @returns {Cube} new cube
+             * @memberof Cube
+             */
+            Cube.prototype.filter = function (callback) {
+                var c = new Cube(this.label);
+                this.data.forEach(function (d) {
+                    if (callback(d))
+                        c.add([d]);
+                });
+                return c;
+            };
+            return Cube;
+        }());
+        Struct.Cube = Cube;
+    })(Struct = Visf.Struct || (Visf.Struct = {}));
     /**
-     *
      * Returns the base 10 logarithm of a number
      * @param {number} x
      * @returns {number} logarithm: int

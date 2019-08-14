@@ -207,16 +207,23 @@ stopwords = ["迎", "费", "最", "请", "再", "微博", "记得", "天", "人"
 
 if __name__ == "__main__":
     texts = []
+    for m in range(0, 12 * 11):
+        texts.append([])
     for i in range(2009, 2020):
-        with open("../../dataWenchuan/word" + str(i) + ".dat", encoding='utf-8') as file:
-            # 文本集
-            each = ",".join(file.readlines())
+        with open("../../dataWenchuan/read" + str(i) + ".dat", encoding='utf-8') as file:
+            ctt = file.readlines()
+            for line in ctt:
+                ls = line.split(',')
+                month = int(ls[1])
+                location = ls[2]
+                txt = ls[0]
+                texts[month].append(txt)
             pass
-        texts.append(each)
         pass
     # 分词
     words_list = []
     for text in texts:
+        text = ",".join(text)
         words = [w.word for w in jp.cut(text) if w.flag in flags and w.word not in stopwords]
         words_list.append(words)
 
@@ -226,7 +233,7 @@ if __name__ == "__main__":
     corpus = [dictionary.doc2bow(words) for words in words_list]
 
     # LDA模型，num_topics设置主题的个数
-    lda = models.ldamodel.LdaModel(corpus=corpus, id2word=dictionary, num_topics=20,
+    lda = models.ldamodel.LdaModel(corpus=corpus, id2word=dictionary, num_topics=6,
                                    decay=0.5, chunksize=200000)
 
     # LdaModel(num_terms=19, num_topics=2, decay=0.5, chunksize=2000)
@@ -236,11 +243,11 @@ if __name__ == "__main__":
         print(topic)
         pass
 
-    year = 2009
+    month = 0
     # 主题推断
     for e, values in enumerate(lda.inference(corpus)[0]):
-        print(year)
-        year += 1
+        print(month)
+        month += 1
         for ee, value in enumerate(values):
             print('\t主题%d推断值%.2f' % (ee, value))
     pass

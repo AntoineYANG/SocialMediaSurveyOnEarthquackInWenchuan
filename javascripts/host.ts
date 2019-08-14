@@ -18,6 +18,8 @@ declare function getCloud(year: string, limit: number): void;
     var columnSet: Array<any> = [];
     var axis: Visf.Axis.Axis2d = null;
     var axis2: Visf.Axis.Axis2d = null;
+    var axis3: Visf.Axis.Axis2d = null;
+    var cube: Visf.Struct.Cube = null;
 }
 
 // 文件路径
@@ -252,4 +254,24 @@ function drawTopic() {
             .css('fill', color)
             .css('visibility', 'hidden');
     }
+
+    $('#cube').append('<svg></svg>');
+    $('#cube svg').attr('id', 'cube_svg').attr('xmlns', 'http://www.w3.org/2000/svg')
+        .attr('height', '274px').attr('width', '735px');
+    axis3 = new Visf.Axis.Axis2d($('#cube_svg'), new Visf.Color.Artists.Matisse.Matisse_dark());
+    axis3.domain_x(2009, 2020);
+    axis3.domain_y(0, 100).set('margin', '0');
+    axis3.note(11, 'x');
+    axis3.note(5, 'y');
+    let _l: Array<object> = [];
+    data_topics.forEach(t => {
+        for (let i: number = 0; i < t['data'].length; i++) {
+            let m: object = {value: t['topic']};
+            m['time'] = 2009 + i;
+            m['topic'] = t['data'][i][1];
+            m['location'] = Math.random();
+            _l.push(m);
+        }
+    });
+    cube = new Visf.Struct.Cube(['time', 'location', 'topic']).add(_l);
 }
