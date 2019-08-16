@@ -35,7 +35,7 @@ string parseTime(const string& str) {
 	int m = 0;
 	for (int i = 7; i < 9; i++) {
 		m *= 10;
-		cout << str[i];
+		// cout << str[i];
 		m += (str[i] - '0');
 	}
 	num += m - 1;
@@ -166,6 +166,10 @@ void skip(int n ) try {
 	return;
 }
 
+const int ALL = 1344512;
+int now = 0;
+const double DID = 79.2927;
+
 int main() {
 	vector< Info > table;
     fin.open("../../dataWenchuan/Tweets_wenchuan_512.csv");
@@ -190,22 +194,26 @@ int main() {
     finfo.close();
 
 	ofstream fout09, fout10, fout11, fout12, fout13, fout14, fout15, fout16, fout17, fout18, fout19;
-	fout09.open("../../dataWenchuan/read2009.dat");
-	fout10.open("../../dataWenchuan/read2010.dat");
-	fout11.open("../../dataWenchuan/read2011.dat");
-	fout12.open("../../dataWenchuan/read2012.dat");
-	fout13.open("../../dataWenchuan/read2013.dat");
-	fout14.open("../../dataWenchuan/read2014.dat");
-	fout15.open("../../dataWenchuan/read2015.dat");
-	fout16.open("../../dataWenchuan/read2016.dat");
-	fout17.open("../../dataWenchuan/read2017.dat");
-	fout18.open("../../dataWenchuan/read2018.dat");
-	fout19.open("../../dataWenchuan/read2019.dat");
+	fout09.open("../data/read/read2009_p.dat");
+	fout10.open("../data/read/read2010_p.dat");
+	fout11.open("../data/read/read2011_p.dat");
+	fout12.open("../data/read/read2012_p.dat");
+	fout13.open("../data/read/read2013_p.dat");
+	fout14.open("../data/read/read2014_p.dat");
+	fout15.open("../data/read/read2015_p.dat");
+	fout16.open("../data/read/read2016_p.dat");
+	fout17.open("../data/read/read2017_p.dat");
+	fout18.open("../data/read/read2018_p.dat");
+	fout19.open("../data/read/read2019_p.dat");
 	ofstream* ptr = 0x0;
 
 	while (!fin.eof()) {
 		getline(fin, str);
 		string list[20];
+		while (now <= ALL * DID) {
+			now++;
+			continue;
+		}
 		if (!getcontent(str, list))
 			continue;
 		if (!str.empty() && str.length() >= 4) {
@@ -242,33 +250,14 @@ int main() {
 				city = (*s).fix(ID);
 				if (!city.empty() && city.compare("") != 0) {
 					*ptr << tw->print() << city << endl;
-					cout << tw->print() << city << endl;
+					// cout << tw->print() << city << endl;
 					break;
 				}
 			}
 			delete tw;
-			if (year.compare("2009")==0)
-				skip(1);
-			else if (year.compare("2010")==0)
-				skip(26);
-			else if (year.compare("2011")==0)
-				skip(129);
-			else if (year.compare("2012")==0)
-				skip(140);
-			else if (year.compare("2013")==0)
-				skip(397);
-			else if (year.compare("2014")==0)
-				skip(138);
-			else if (year.compare("2015")==0)
-				skip(89);
-			else if (year.compare("2016")==0)
-				skip(107);
-			else if (year.compare("2017")==0)
-				skip(159);
-			else if (year.compare("2018")==0)
-				skip(298);
-			else if (year.compare("2019")==0)
-				skip(9);
+			now++;
+			if (now % 100 == 0)
+				cout << now * 100.00000 / ALL << endl;
 		}
 	}
 	fin.close();
