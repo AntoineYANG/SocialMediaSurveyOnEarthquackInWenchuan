@@ -15,7 +15,7 @@ var __extends = (this && this.__extends) || (function () {
  * @Author: Antoine YANG
  * @Date: 2019-08-08 15:15:25
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-08-14 00:52:47
+ * @Last Modified time: 2019-08-19 01:15:24
  */
 var Visf;
 (function (Visf) {
@@ -613,6 +613,28 @@ var Visf;
                 return svg;
             };
             /**
+             *Appends a column.
+             * @param {Array<number>} data coordinates
+             * @returns {JQuery<HTMLElement>} the appended jQuery element
+             * @memberof Axis2d
+             */
+            Axis2d.prototype.column = function (data) {
+                var fill = this.theme === null ? 'white' : this.theme.at(this.series);
+                var stroke = this.theme === null ? 'black' : this.theme.at(this.series + 1);
+                var svg = $(jQuery.parseXML("<rect width=\"16px\" transform=\"translate(-8, 0)\"\n                    style=\"fill: " + fill + "; stroke: " + stroke + "; stroke-width: 1px 1px 0 1px; fill-opacity: 1;\" \n                    xmlns=\"http://www.w3.org/2000/svg\"></rect>").documentElement);
+                svg.attr('__style__', 'column');
+                svg.attr('__tab__', 'rect');
+                svg.attr('__data__', data[0] + "," + data[1]);
+                svg.attr('__serie__', this.series);
+                svg.attr('x', this.fx(parseFloat(svg.attr('__data__').toString().split(',')[0])));
+                svg.attr('height', this.h_ + this.padding[0] - this.fy(parseFloat(svg.attr('__data__').toString().split(',')[1])));
+                svg.attr('y', this.fy(parseFloat(svg.attr('__data__').toString().split(',')[1])));
+                this.board.append(svg);
+                this.observed.push(svg);
+                this.series++;
+                return svg;
+            };
+            /**
              *Appends a kind of SVG elements by a list of coordinates.
             * @param {string} element the tab of the elements needed appending
             * @param {Array< Array<number> >} nodes list of coordinates
@@ -729,6 +751,9 @@ var Visf;
                 if (ticks > 0)
                     this.note(ticks, 'y');
                 this.observed.forEach(function (e) {
+                    if (e.attr('__tab__') === 'rect') {
+                        e.attr('transform', "translate(" + parseFloat(e.attr('width')) / 2 + ", 0)");
+                    }
                     if (e.attr('__style__') == 'point') {
                         var x = _this.fx(parseFloat(e.attr('__data__').toString().split(',')[0]));
                         var y = _this.fy(parseFloat(e.attr('__data__').toString().split(',')[1]));
@@ -754,6 +779,11 @@ var Visf;
                             d += " L" + x + " " + y;
                         }
                         e.attr('d', d);
+                    }
+                    else if (e.attr('__style__') == 'column') {
+                        e.attr('x', _this.fx(parseFloat(e.attr('__data__').toString().split(',')[0])));
+                        e.attr('height', _this.h_ + _this.padding[0] - _this.fy(parseFloat(e.attr('__data__').toString().split(',')[1])));
+                        e.attr('y', _this.fy(parseFloat(e.attr('__data__').toString().split(',')[1])));
                     }
                 });
             };
@@ -917,7 +947,7 @@ var Visf;
                     if (e.attr('__tab__') == 'text' || e.attr('__style__') === 'tick_x' || e.attr('__style__') === 'tick_y') {
                         e.css('fill', _this.theme.getOutstand());
                     }
-                    else if (e.attr('__style__') == 'point') {
+                    else if (e.attr('__style__') == 'point' || e.attr('__style__') == 'column') {
                         var index = e.attr('__serie__') === null ? 0 : parseInt(e.attr('__serie__'));
                         e.css('fill', _this.theme.at(index)).css('stroke', _this.theme.at(index + 1));
                     }
@@ -999,7 +1029,7 @@ var Visf;
             };
             /**
              *Returns the projection of the input value.
-            * @param {number} val input
+            * @param {any} val input
             * @returns {number} project
             * @memberof LinearScale
             */
@@ -1029,7 +1059,7 @@ var Visf;
             /**
              *Returns the calculation result of the possible input value of the projection.
             * @param {number} cor projection value
-            * @returns {number} possible origin value
+            * @returns {any} possible origin value
             * @memberof LinearScale
             */
             LinearScale.prototype.from = function (cor) {
@@ -1082,9 +1112,8 @@ var Visf;
             };
             /**
              *Sets the allowed input value of the scale
-             * @param {*} Array
-             * @param {*}
-             * @param {*} number
+             * @param {Array<number>} list domain list
+             * @returns {OrdinalScale} the object itself
              * @memberof OrdinalScale
              */
             OrdinalScale.prototype.among = function (list) {
@@ -1105,7 +1134,7 @@ var Visf;
             };
             /**
              *Returns the projection of the input value.
-            * @param {number} val input
+            * @param {any} val input
             * @returns {number} projection
             * @memberof OrdinalScale
             */
@@ -1132,7 +1161,7 @@ var Visf;
             /**
              *Returns the calculation result of the possible input value of the projection.
             * @param {number} cor projection value
-            * @returns {number} possible origin value
+            * @returns {any} possible origin value
             * @memberof OrdinalScale
             */
             OrdinalScale.prototype.from = function (cor) {
@@ -1389,7 +1418,35 @@ var Visf;
         var Cube = /** @class */ (function () {
             function Cube(l) {
                 this.maxDimension = l.length;
-                this.label = l;
+                this.label = [];
+                this.scale = [];
+                for (var i = 0; i < l.length; i++) {
+                    var style = 'linear';
+                    var str = l[i];
+                    if (str.indexOf('-') != -1) {
+                        var cfr = str.split('-');
+                        switch (cfr[1].replace(' ', '')) {
+                            case "l":
+                                style = 'linear';
+                                break;
+                            case "linear":
+                                style = 'linear';
+                                break;
+                            case "o":
+                                style = 'ordinal';
+                                break;
+                            case "ordinal":
+                                style = 'ordinal';
+                                break;
+                            case "log":
+                                style = 'log';
+                                break;
+                        }
+                        str = cfr[0];
+                    }
+                    this.label.push(str);
+                    this.scale.push(style);
+                }
                 this.data = [];
             }
             /**
@@ -1418,20 +1475,20 @@ var Visf;
                 return this;
             };
             /**
-             *Slices old cube at some certain dimensions, returns a new cube.
+             *Given fixed value(s), slices old cube at some certain dimensions, returns a new cube.
              * @param {object} limit dimension limit
              * @returns {Cube} new cube
              * @memberof Cube
              */
             Cube.prototype.slice = function (limit) {
                 var labelNew = [];
-                this.label.forEach(function (l) {
+                for (var i = 0; i < this.maxDimension; i++) {
                     for (var n in limit) {
-                        if (n == l)
+                        if (n == this.label[i])
                             return;
                     }
-                    labelNew.push(l);
-                });
+                    labelNew.push(this.label[i] + '-' + this.scale[i]);
+                }
                 var c = new Cube(labelNew);
                 this.data.forEach(function (d) {
                     for (var l in limit) {
@@ -1454,12 +1511,12 @@ var Visf;
                     dimension[_i] = arguments[_i];
                 }
                 var labelNew = [];
-                this.label.forEach(function (l) {
+                for (var i = 0; i < this.maxDimension; i++) {
                     for (var n in dimension) {
-                        if (dimension[n] == l)
-                            labelNew.push(l);
+                        if (dimension[n] == this.label[i])
+                            labelNew.push(this.label[i] + '-' + this.scale[i]);
                     }
-                });
+                }
                 var c = new Cube(labelNew);
                 c.add(this.data);
                 return c;
@@ -1482,22 +1539,74 @@ var Visf;
                 var x_max = this.data[0][this.label[0]];
                 var y_min = this.data[0][this.label[1]];
                 var y_max = this.data[0][this.label[1]];
+                var x_list = [];
+                var y_list = [];
                 this.data.forEach(function (d) {
                     list.push([d[_this.label[0]], d[_this.label[1]]]);
-                    if (d[_this.label[0]] < x_min)
-                        x_min = d[_this.label[0]];
-                    if (d[_this.label[0]] > x_max)
-                        x_max = d[_this.label[0]];
-                    if (d[_this.label[1]] < y_min)
-                        y_min = d[_this.label[1]];
-                    if (d[_this.label[1]] > y_max)
-                        y_max = d[_this.label[1]];
+                    if (_this.scale[0] == 'ordinal') {
+                        var flag = false;
+                        for (var i = 0; i < x_list.length; i++) {
+                            if (x_list[i] == d[_this.label[0]]) {
+                                flag = true;
+                                break;
+                            }
+                        }
+                        if (!flag)
+                            x_list.push(d[_this.label[0]]);
+                    }
+                    else {
+                        if (d[_this.label[0]] < x_min)
+                            x_min = d[_this.label[0]];
+                        if (d[_this.label[0]] > x_max)
+                            x_max = d[_this.label[0]];
+                    }
+                    if (_this.scale[1] == 'ordinal') {
+                        var flag = false;
+                        for (var i = 0; i < y_list.length; i++) {
+                            if (y_list[i] == d[_this.label[1]]) {
+                                flag = true;
+                                break;
+                            }
+                        }
+                        if (!flag)
+                            y_list.push(d[_this.label[1]]);
+                    }
+                    else {
+                        if (d[_this.label[1]] < y_min)
+                            y_min = d[_this.label[1]];
+                        if (d[_this.label[1]] > y_max)
+                            y_max = d[_this.label[1]];
+                    }
                 });
-                // axis.xScale('linear').yScale('linear').domain_x(x_min, x_max).domain_y(y_min, y_max).join('circle', list);
-                axis.domain_x(x_min, x_max).domain_y(y_min, y_max).join('circle', list);
-                this.data.forEach(function (d) {
-                    axis.addtext(d['value'], d[_this.label[0]], d[_this.label[1]]);
-                });
+                switch (this.scale[0]) {
+                    case 'linear':
+                        axis.domain_x(x_min, x_max);
+                        break;
+                    case 'ordinal':
+                        axis.xScale('ordinal', x_list);
+                        break;
+                    case 'log':
+                        axis.xScale('log').domain_x(x_min, x_max);
+                        break;
+                    case 'power':
+                        axis.xScale('power').domain_x(x_min, x_max);
+                        break;
+                }
+                switch (this.scale[1]) {
+                    case 'linear':
+                        axis.domain_y(y_min, y_max);
+                        break;
+                    case 'ordinal':
+                        axis.yScale('ordinal', y_list);
+                        break;
+                    case 'log':
+                        axis.yScale('log').domain_y(y_min, y_max);
+                        break;
+                    case 'power':
+                        axis.yScale('power').domain_y(y_min, y_max);
+                        break;
+                }
+                axis.join('circle', list);
                 return true;
             };
             /**

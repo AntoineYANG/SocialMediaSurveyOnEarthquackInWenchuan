@@ -2,7 +2,7 @@
  * @Author: Antoine YANG 
  * @Date: 2019-08-08 15:15:09 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-08-14 01:21:28
+ * @Last Modified time: 2019-08-19 01:12:24
  */
 
 /// <reference path="./visf.ts" />
@@ -20,6 +20,11 @@ declare function getCloud(year: string, limit: number): void;
     var axis2: Visf.Axis.Axis2d = null;
     var axis3: Visf.Axis.Axis2d = null;
     var cube: Visf.Struct.Cube = null;
+    var Province: Array<string> = [
+        "黑龙江", "吉林", "新疆", "辽宁", "内蒙古", "北京", "天津", "河北", "宁夏", "山东", "山西", "青海", "甘肃", "陕西", "河南", "江苏",
+        "西藏", "上海", "安徽", "湖北", "四川", "重庆", "浙江", "江西", "湖南", "贵州", "福建", "台湾", "云南", "广东", "广西", "海南",
+        "海外", "其他", "香港", "澳门"
+    ];
 }
 
 // 文件路径
@@ -268,10 +273,81 @@ function drawTopic() {
         for (let i: number = 0; i < t['data'].length; i++) {
             let m: object = {value: t['topic']};
             m['time'] = 2009 + i;
-            m['topic'] = t['data'][i][1];
-            m['location'] = Math.random();
+            m['topic'] = t['data'][i][0] * 100 / sum[i];
+            m['location'] = parseInt((Math.random() * 36).toString());
             _l.push(m);
         }
     });
-    cube = new Visf.Struct.Cube(['time', 'location', 'topic']).add(_l);
+    cube = new Visf.Struct.Cube(['location-o', 'time-o', 'topic-l']).add(_l);
+    cube.project('location', 'topic').displayOn(axis3);
+}
+
+// 直方图 - 时间
+function play_time() {
+    axis2.clear();
+    axis2.yScale('linear').domain_x(2009, 2020).xScale('linear');
+    axis2.note(12, 'x');
+    let all: number = 0;
+    let list: Array< Array<number> > = [];
+    let max: number = 0;
+    [2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019].forEach(year => {
+        let sum: number = 0;
+        data_province[year.toString()].forEach(prov => {
+            sum += prov[1];
+        });
+        list.push([year, sum]);
+        all += sum;
+        if (sum > max)
+            max = sum;
+    });
+    axis2.domain_y(0, parseInt((max / all * 10).toString()) / 10 + 0.1).note((parseInt((max / all * 10).toString()) / 10 + 0.1) / 0.1, 'y');
+    list.forEach(e => {
+        axis2.column([e[0], e[1] / all]).attr('width', 38).attr('transform', 'translate(0, 0)').css('stroke', 'none');
+        axis2.addtext(e[1].toString(), e[0], e[1] / all).attr('dy', '-8');
+    });
+}
+
+// 直方图 - 地区
+function play_region() {
+    axis2.clear();
+    axis2.yScale('linear').domain_x(0, 36).xScale('linear');
+    let all: number = 0;
+    let list: Array< Array<number> > = [];
+    let max: number = 0;
+    for (let i: number = 0; i < 36; i++) {
+        list.push([i, 0]);
+    }
+    [2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019].forEach(year => {
+        data_province[year.toString()].forEach(prov => {
+            let idx: number = 0;
+            for (; idx < 36; idx++) {
+                if (Province[idx] == prov[0]) {
+                    list[idx][1] += prov[1];
+                    all += prov[1];
+                    break;
+                }
+            }
+        });
+    });
+    list.forEach(d => {
+        if (d[1] > max)
+            max = d[1];
+    });
+    axis2.domain_y(0, parseInt((max / all * 100).toString()) / 100 + 0.01)
+        .note((parseInt((max / all * 100).toString()) / 100 + 0.01) / 0.01, 'y');
+    axis2.note(36, 'x').text(function (i) {
+        return Province[i];
+    })
+    .attr('font-size', '9.5')
+    .attr('text-anchor', 'start')
+    .attr('rotate', '90')
+    .css('writing-mode', 'tb')
+    .css('letter-spacing', '5px')
+    .attr('transform', 'translate(10, -8)');
+    list.forEach(e => {
+        axis2.column([e[0], e[1] / all]).attr('width', 11.4).attr('transform', 'translate(0, 0)').css('stroke', 'none');
+    });
+    list.forEach(e => {
+        axis2.addtext(e[1].toString(), e[0], e[1] / all).attr('dy', '-6').attr('font-size', '10');
+    });
 }

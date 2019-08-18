@@ -227,6 +227,7 @@ if __name__ == "__main__":
         words = [w.word for w in jp.cut(text) if w.flag in flags and w.word not in stopwords]
         words_list.append(words)
 
+    print(words_list)
     # 构造词典
     dictionary = corpora.Dictionary(words_list)
     # 基于词典，使【词】→【稀疏向量】，并将向量放入列表，形成【稀疏向量集】

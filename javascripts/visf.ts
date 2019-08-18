@@ -2,7 +2,7 @@
  * @Author: Antoine YANG 
  * @Date: 2019-08-08 15:15:25 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-08-14 00:52:47
+ * @Last Modified time: 2019-08-19 01:15:24
  */
 namespace Visf {
     export namespace Color {
@@ -322,6 +322,15 @@ namespace Visf {
             * @memberof Axis
             */
             public abstract append(element: string, ...data: Array<number>): JQuery<HTMLElement>;
+
+            /**
+             *Appends a column.
+             * @abstract
+             * @param {Array<number>} data coordinate
+             * @returns {JQuery<HTMLElement>} the appended jQuery element
+             * @memberof Axis
+             */
+            public abstract column(data: Array<number>): JQuery<HTMLElement>;
 
             /**
              *Appends a kind of SVG elements by a list of coordinates.
@@ -713,6 +722,31 @@ namespace Visf {
             }
 
             /**
+             *Appends a column.
+             * @param {Array<number>} data coordinates
+             * @returns {JQuery<HTMLElement>} the appended jQuery element
+             * @memberof Axis2d
+             */
+            public column(data: Array<number>): JQuery<HTMLElement> {
+                let fill: string = this.theme === null ? 'white' : this.theme.at(this.series);
+                let stroke: string = this.theme === null ? 'black' : this.theme.at(this.series + 1);
+                let svg: JQuery<HTMLElement> = $(jQuery.parseXML(`<rect width="16px" transform="translate(-8, 0)"
+                    style="fill: ${fill}; stroke: ${stroke}; stroke-width: 1px 1px 0 1px; fill-opacity: 1;" 
+                    xmlns="http://www.w3.org/2000/svg"></rect>`).documentElement);
+                svg.attr('__style__', 'column');
+                svg.attr('__tab__', 'rect');
+                svg.attr('__data__', `${data[0]},${data[1]}`);
+                svg.attr('__serie__', this.series);
+                svg.attr('x', this.fx(parseFloat(svg.attr('__data__').toString().split(',')[0])));
+                svg.attr('height', this.h_ + this.padding[0] - this.fy(parseFloat(svg.attr('__data__').toString().split(',')[1])));
+                svg.attr('y', this.fy(parseFloat(svg.attr('__data__').toString().split(',')[1])));
+                this.board.append(svg);
+                this.observed.push(svg);
+                this.series++;
+                return svg;
+            }
+
+            /**
              *Appends a kind of SVG elements by a list of coordinates.
             * @param {string} element the tab of the elements needed appending
             * @param {Array< Array<number> >} nodes list of coordinates
@@ -831,6 +865,9 @@ namespace Visf {
                 if (ticks > 0)
                     this.note(ticks, 'y');
                 this.observed.forEach(e => {
+                    if (e.attr('__tab__') === 'rect') {
+                        e.attr('transform', `translate(${parseFloat(e.attr('width')) / 2}, 0)`);
+                    }
                     if (e.attr('__style__') == 'point') {
                         let x: number = this.fx(parseFloat(e.attr('__data__').toString().split(',')[0]));
                         let y: number = this.fy(parseFloat(e.attr('__data__').toString().split(',')[1]));
@@ -856,6 +893,11 @@ namespace Visf {
                             d += ` L${x} ${y}`;
                         }
                         e.attr('d', d);
+                    }
+                    else if (e.attr('__style__') == 'column') {
+                        e.attr('x', this.fx(parseFloat(e.attr('__data__').toString().split(',')[0])));
+                        e.attr('height', this.h_ + this.padding[0] - this.fy(parseFloat(e.attr('__data__').toString().split(',')[1])));
+                        e.attr('y', this.fy(parseFloat(e.attr('__data__').toString().split(',')[1])));
                     }
                 });
             }
@@ -1037,7 +1079,7 @@ namespace Visf {
                     if (e.attr('__tab__') == 'text' || e.attr('__style__') === 'tick_x' || e.attr('__style__') === 'tick_y') {
                         e.css('fill', this.theme.getOutstand());
                     }
-                    else if (e.attr('__style__') == 'point') {
+                    else if (e.attr('__style__') == 'point' || e.attr('__style__') == 'column') {
                         let index: number = e.attr('__serie__') === null ? 0 : parseInt(e.attr('__serie__'));
                         e.css('fill', this.theme.at(index)).css('stroke', this.theme.at(index + 1));
                     }
@@ -1064,8 +1106,8 @@ namespace Visf {
             out_of_range: Solution;
             domain(min: number, max: number): Scale;
             range(min: number, max: number): Scale;
-            to(val: number): number;
-            from(cor: number): number;
+            to(val: any): number;
+            from(cor: number): any;
             handle(s: Solution): Scale;
         }
         
@@ -1132,11 +1174,11 @@ namespace Visf {
 
             /**
              *Returns the projection of the input value.
-            * @param {number} val input
+            * @param {any} val input
             * @returns {number} project
             * @memberof LinearScale
             */
-            to(val: number): number {
+            to(val: any): number {
                 if (this.domain_min == null || this.domain_max == null || this.range_min == null || this.range_max == null) {
                     console.error('This scale is not defined yet: ', this);
                     return null;
@@ -1163,10 +1205,10 @@ namespace Visf {
             /**
              *Returns the calculation result of the possible input value of the projection.
             * @param {number} cor projection value
-            * @returns {number} possible origin value
+            * @returns {any} possible origin value
             * @memberof LinearScale
             */
-            from(cor: number): number {
+            from(cor: number): any {
                 if (this.domain_min == null || this.domain_max == null || this.range_min == null || this.range_max == null) {
                     console.error('This scale is not defined yet: ', this);
                     return null;
@@ -1216,9 +1258,8 @@ namespace Visf {
             
             /**
              *Sets the allowed input value of the scale
-             * @param {*} Array
-             * @param {*} 
-             * @param {*} number
+             * @param {Array<number>} list domain list
+             * @returns {OrdinalScale} the object itself
              * @memberof OrdinalScale
              */
             public among(list: Array<number>): OrdinalScale {
@@ -1241,11 +1282,11 @@ namespace Visf {
 
             /**
              *Returns the projection of the input value.
-            * @param {number} val input
+            * @param {any} val input
             * @returns {number} projection
             * @memberof OrdinalScale
             */
-            to(val: number): number {
+            to(val: any): number {
                 if (this.domain_list === null || this.range_min == null || this.range_max == null) {
                     console.error('This scale is not defined yet: ', this);
                     return null;
@@ -1269,10 +1310,10 @@ namespace Visf {
             /**
              *Returns the calculation result of the possible input value of the projection.
             * @param {number} cor projection value
-            * @returns {number} possible origin value
+            * @returns {any} possible origin value
             * @memberof OrdinalScale
             */
-            from(cor: number): number {
+            from(cor: number): any {
                 if (this.domain_list === null || this.range_min == null || this.range_max == null) {
                     console.error('This scale is not defined yet: ', this);
                     return null;
@@ -1532,11 +1573,40 @@ namespace Visf {
         export class Cube {
             private maxDimension: number;
             private label: Array<string>;
+            private scale: Array<string>;
             private data: Array<object>;
 
             public constructor(l: Array<string>) {
                 this.maxDimension = l.length;
-                this.label = l;
+                this.label = [];
+                this.scale = [];
+                for (let i: number = 0; i < l.length; i++) {
+                    let style: string = 'linear';
+                    let str: string = l[i];
+                    if (str.indexOf('-') != -1) {
+                        let cfr: Array<string> = str.split('-');
+                        switch (cfr[1].replace(' ', '')) {
+                            case "l":
+                                style = 'linear';
+                                break;
+                            case "linear":
+                                style = 'linear';
+                                break;
+                            case "o":
+                                style = 'ordinal';
+                                break;
+                            case "ordinal":
+                                style = 'ordinal';
+                                break;
+                            case "log":
+                                style = 'log';
+                                break;
+                        }
+                        str = cfr[0];
+                    }
+                    this.label.push(str);
+                    this.scale.push(style);
+                }
                 this.data = [];
             }
 
@@ -1567,20 +1637,20 @@ namespace Visf {
             }
 
             /**
-             *Slices old cube at some certain dimensions, returns a new cube.
+             *Given fixed value(s), slices old cube at some certain dimensions, returns a new cube.
              * @param {object} limit dimension limit
              * @returns {Cube} new cube
              * @memberof Cube
              */
             public slice(limit: object): Cube {
                 let labelNew: Array<string> = [];
-                this.label.forEach(l => {
+                for (let i: number = 0; i < this.maxDimension; i++) { 
                     for (let n in limit) {
-                        if (n == l)
+                        if (n == this.label[i])
                             return;
                     }
-                    labelNew.push(l);
-                });
+                    labelNew.push(this.label[i] + '-' + this.scale[i]);
+                }
                 let c: Cube = new Cube(labelNew);
                 this.data.forEach(d => {
                     for (let l in limit) {
@@ -1600,12 +1670,12 @@ namespace Visf {
              */
             public project(...dimension: Array<string>): Cube {
                 let labelNew: Array<string> = [];
-                this.label.forEach(l => {
+                for (let i: number = 0; i < this.maxDimension; i++) { 
                     for (let n in dimension) {
-                        if (dimension[n] == l)
-                            labelNew.push(l);
+                        if (dimension[n] == this.label[i])
+                            labelNew.push(this.label[i] + '-' + this.scale[i]);
                     }
-                });
+                }
                 let c: Cube = new Cube(labelNew);
                 c.add(this.data);
                 return c;
@@ -1628,22 +1698,74 @@ namespace Visf {
                 let x_max: number = this.data[0][this.label[0]];
                 let y_min: number = this.data[0][this.label[1]];
                 let y_max: number = this.data[0][this.label[1]];
+                let x_list: Array<number> = [];
+                let y_list: Array<number> = [];
                 this.data.forEach(d => {
                     list.push([d[this.label[0]], d[this.label[1]]]);
-                    if (d[this.label[0]] < x_min)
-                        x_min = d[this.label[0]];
-                    if (d[this.label[0]] > x_max)
-                        x_max = d[this.label[0]];
-                    if (d[this.label[1]] < y_min)
-                        y_min = d[this.label[1]];
-                    if (d[this.label[1]] > y_max)
-                        y_max = d[this.label[1]];
+                    if (this.scale[0] == 'ordinal') {
+                        let flag: boolean = false;
+                        for (let i: number = 0; i < x_list.length; i++) {
+                            if (x_list[i] == d[this.label[0]]) {
+                                flag = true;
+                                break;
+                            }
+                        }
+                        if (!flag)
+                            x_list.push(d[this.label[0]]);
+                    }
+                    else {
+                        if (d[this.label[0]] < x_min)
+                            x_min = d[this.label[0]];
+                        if (d[this.label[0]] > x_max)
+                            x_max = d[this.label[0]];
+                    }
+                    if (this.scale[1] == 'ordinal') {
+                        let flag: boolean = false;
+                        for (let i: number = 0; i < y_list.length; i++) {
+                            if (y_list[i] == d[this.label[1]]) {
+                                flag = true;
+                                break;
+                            }
+                        }
+                        if (!flag)
+                            y_list.push(d[this.label[1]]);
+                    }
+                    else {
+                        if (d[this.label[1]] < y_min)
+                            y_min = d[this.label[1]];
+                        if (d[this.label[1]] > y_max)
+                            y_max = d[this.label[1]];
+                    }                    
                 });
-                // axis.xScale('linear').yScale('linear').domain_x(x_min, x_max).domain_y(y_min, y_max).join('circle', list);
-                axis.domain_x(x_min, x_max).domain_y(y_min, y_max).join('circle', list);
-                this.data.forEach(d => {
-                    axis.addtext(d['value'], d[this.label[0]], d[this.label[1]]);
-                });
+                switch (this.scale[0]) {
+                    case 'linear':
+                        axis.domain_x(x_min, x_max);
+                        break;
+                    case 'ordinal':
+                        axis.xScale('ordinal', x_list);
+                        break;
+                    case 'log':
+                        axis.xScale('log').domain_x(x_min, x_max);
+                        break;
+                    case 'power':
+                        axis.xScale('power').domain_x(x_min, x_max);
+                        break;
+                }
+                switch (this.scale[1]) {
+                    case 'linear':
+                        axis.domain_y(y_min, y_max);
+                        break;
+                    case 'ordinal':
+                        axis.yScale('ordinal', y_list);
+                        break;
+                    case 'log':
+                        axis.yScale('log').domain_y(y_min, y_max);
+                        break;
+                    case 'power':
+                        axis.yScale('power').domain_y(y_min, y_max);
+                        break;
+                }
+                axis.join('circle', list);
                 return true;
             }
 

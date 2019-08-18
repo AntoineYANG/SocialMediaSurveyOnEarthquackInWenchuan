@@ -168,7 +168,7 @@ void skip(int n ) try {
 
 const int ALL = 1344512;
 int now = 0;
-const double DID = 79.2927;
+const double DID = 84.7891;
 
 int main() {
 	vector< Info > table;
@@ -210,9 +210,11 @@ int main() {
 	while (!fin.eof()) {
 		getline(fin, str);
 		string list[20];
-		while (now <= ALL * DID) {
+		while (now * 100 <= ALL * DID) {
 			now++;
-			continue;
+			getline(fin, str);
+			if (now % 10000 == 0)
+				cout << "..." << now * 100.00000 / ALL << endl;
 		}
 		if (!getcontent(str, list))
 			continue;
