@@ -2,7 +2,7 @@
  * @Author: Antoine YANG 
  * @Date: 2019-08-08 15:15:25 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-08-19 01:15:24
+ * @Last Modified time: 2019-08-21 14:25:44
  */
 namespace Visf {
     export namespace Color {
@@ -1644,12 +1644,16 @@ namespace Visf {
              */
             public slice(limit: object): Cube {
                 let labelNew: Array<string> = [];
-                for (let i: number = 0; i < this.maxDimension; i++) { 
+                for (let i: number = 0; i < this.maxDimension; i++) {
+                    let flag: boolean = true;
                     for (let n in limit) {
-                        if (n == this.label[i])
-                            return;
+                        if (n == this.label[i]) {
+                            flag = false;
+                            break;
+                        }
                     }
-                    labelNew.push(this.label[i] + '-' + this.scale[i]);
+                    if (flag)
+                        labelNew.push(this.label[i] + '-' + this.scale[i]);
                 }
                 let c: Cube = new Cube(labelNew);
                 this.data.forEach(d => {

@@ -15,7 +15,7 @@ var __extends = (this && this.__extends) || (function () {
  * @Author: Antoine YANG
  * @Date: 2019-08-08 15:15:25
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-08-19 01:15:24
+ * @Last Modified time: 2019-08-21 14:25:44
  */
 var Visf;
 (function (Visf) {
@@ -1483,11 +1483,15 @@ var Visf;
             Cube.prototype.slice = function (limit) {
                 var labelNew = [];
                 for (var i = 0; i < this.maxDimension; i++) {
+                    var flag = true;
                     for (var n in limit) {
-                        if (n == this.label[i])
-                            return;
+                        if (n == this.label[i]) {
+                            flag = false;
+                            break;
+                        }
                     }
-                    labelNew.push(this.label[i] + '-' + this.scale[i]);
+                    if (flag)
+                        labelNew.push(this.label[i] + '-' + this.scale[i]);
                 }
                 var c = new Cube(labelNew);
                 this.data.forEach(function (d) {

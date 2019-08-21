@@ -2,12 +2,14 @@
  * @Author: Antoine YANG
  * @Date: 2019-08-08 15:15:09
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-08-19 01:12:24
+ * @Last Modified time: 2019-08-21 14:37:54
  */
 /// <reference path="./visf.ts" />
 // 全局变量
 {
     var YEAR = 2009;
+    var THEME = "热点话题";
+    var PROJ = 'space_topic';
     var WORDLIMIT = 20;
     var data_province = {};
     var data_topics = [];
@@ -36,6 +38,8 @@
     var Param = void 0;
     (function (Param) {
         Param[Param["year"] = 0] = "year";
+        Param[Param["theme"] = 1] = "theme";
+        Param[Param["proj"] = 2] = "proj";
     })(Param || (Param = {}));
     $("#yearlist a").on("click", function () {
         var year = parseInt($(this).text());
@@ -48,15 +52,82 @@
         }
         redraw(changed);
     });
+    $("#actlist a").on("click", function () {
+        var theme = $(this).text();
+        var changed = [];
+        if (theme != THEME) {
+            $("#selectedact").html(theme);
+            THEME = theme;
+            changed.push(Param.theme);
+        }
+        redraw(changed);
+    });
+    $('.proj').on('click', function () {
+        var proj = $(this).val().toString();
+        $('input.slice').val('');
+        var changed = [];
+        if (proj != PROJ) {
+            PROJ = proj;
+            changed.push(Param.proj);
+        }
+        redraw(changed);
+    });
+    $('input.slice').on('click', function () {
+        $('input.slice').val('');
+    });
+    $('#slice').on('click', function () {
+        $('.proj').prop('checked', false);
+        var p = {};
+        switch (false) {
+            case $('input.slice').eq(0).val().toString() === "":
+                p = { time: parseInt($('input.slice').eq(0).val().toString()) };
+                break;
+            case $('input.slice').eq(1).val().toString() === "":
+                var idx = -1;
+                for (var i = 0; i < Province.length; i++) {
+                    if ($('input.slice').eq(1).val().toString() == Province[i]) {
+                        idx = i;
+                        break;
+                    }
+                }
+                if (idx === -1) {
+                    idx = parseInt($('input.slice').eq(1).val().toString());
+                }
+                p = { location: idx };
+                break;
+            case $('input.slice').eq(2).val().toString() === "":
+                p = { topic: parseInt($('input.slice').eq(2).val().toString()) };
+                break;
+        }
+        PROJ = "";
+        cube_slice(p);
+    });
     function redraw(changed) {
-        if (changed.length == 0)
+        if (changed.length === 0)
             return;
         for (var i = 0; i < changed.length; i++) {
-            if (changed[i] == Param.year) {
+            if (changed[i] === Param.year) {
                 // 重绘地图
                 drawColumn(YEAR);
                 // 重绘词云
                 getCloud(YEAR.toString(), WORDLIMIT);
+            }
+            else if (changed[i] === Param.theme) {
+                switch (THEME) {
+                    case "热点话题":
+                        play_theme();
+                        break;
+                    case "时间分布":
+                        play_time();
+                        break;
+                    case "地理分布":
+                        play_region();
+                        break;
+                }
+            }
+            else if (changed[i] === Param.proj) {
+                var c = PROJ.split('-');
+                cube_proj(c[0], c[1]);
             }
         }
     }
@@ -186,6 +257,38 @@ function drawTopic() {
     $('#topiccount svg').attr('id', 'topic_svg').attr('xmlns', 'http://www.w3.org/2000/svg')
         .attr('height', '475px').attr('width', '500px');
     axis2 = new Visf.Axis.Axis2d($('#topic_svg'), new Visf.Color.Artists.Matisse.Matisse_dark());
+    play_theme();
+    var sum = [];
+    for (var y = 2009; y < 2020; y++) {
+        sum.push(0);
+    }
+    for (var i = 0; i < data_topics.length; i++) {
+        for (var d = 0; d < 11; d++) {
+            sum[d] += data_topics[i]["data"][d][0];
+        }
+    }
+    $('#cube').append('<svg></svg>');
+    $('#cube svg').attr('id', 'cube_svg').attr('xmlns', 'http://www.w3.org/2000/svg')
+        .attr('height', '274px').attr('width', '735px');
+    axis3 = new Visf.Axis.Axis2d($('#cube_svg'), new Visf.Color.Artists.Matisse.Matisse_dark());
+    axis3.domain_x(2009, 2020);
+    axis3.domain_y(0, 100).set('margin', '0');
+    var _l = [];
+    data_topics.forEach(function (t) {
+        for (var i = 0; i < t['data'].length; i++) {
+            var m = { value: t['topic'] };
+            m['time'] = 2009 + i;
+            m['topic'] = t['data'][i][0] * 100 / sum[i];
+            m['location'] = parseInt((Math.random() * 36).toString());
+            _l.push(m);
+        }
+    });
+    cube = new Visf.Struct.Cube(['location-o', 'time-o', 'topic-l']).add(_l);
+    $('.proj').eq(1).prop("checked", true).click();
+    $('input.slice').val('');
+}
+// 折线图 - 话题
+function play_theme() {
     axis2.xScale('ordinal', [2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019]);
     axis2.yScale('log').domain_y(0, 100).set('margin', '0');
     axis2.note(11, 'x');
@@ -236,31 +339,11 @@ function drawTopic() {
     for (var i = 0; i < data_topics.length; i++) {
         _loop_2(i);
     }
-    $('#cube').append('<svg></svg>');
-    $('#cube svg').attr('id', 'cube_svg').attr('xmlns', 'http://www.w3.org/2000/svg')
-        .attr('height', '274px').attr('width', '735px');
-    axis3 = new Visf.Axis.Axis2d($('#cube_svg'), new Visf.Color.Artists.Matisse.Matisse_dark());
-    axis3.domain_x(2009, 2020);
-    axis3.domain_y(0, 100).set('margin', '0');
-    axis3.note(11, 'x');
-    axis3.note(5, 'y');
-    var _l = [];
-    data_topics.forEach(function (t) {
-        for (var i = 0; i < t['data'].length; i++) {
-            var m = { value: t['topic'] };
-            m['time'] = 2009 + i;
-            m['topic'] = t['data'][i][0] * 100 / sum[i];
-            m['location'] = parseInt((Math.random() * 36).toString());
-            _l.push(m);
-        }
-    });
-    cube = new Visf.Struct.Cube(['location-o', 'time-o', 'topic-l']).add(_l);
-    cube.project('location', 'topic').displayOn(axis3);
 }
 // 直方图 - 时间
 function play_time() {
     axis2.clear();
-    axis2.yScale('linear').domain_x(2009, 2020).xScale('linear');
+    axis2.handle('hard').yScale('linear').domain_x(2009, 2020).xScale('linear');
     axis2.note(12, 'x');
     var all = 0;
     var list = [];
@@ -309,7 +392,8 @@ function play_region() {
     });
     axis2.domain_y(0, parseInt((max / all * 100).toString()) / 100 + 0.01)
         .note((parseInt((max / all * 100).toString()) / 100 + 0.01) / 0.01, 'y');
-    axis2.note(36, 'x').text(function (i) {
+    axis2.note(36, 'x')
+        .text(function (i) {
         return Province[i];
     })
         .attr('font-size', '9.5')
@@ -324,4 +408,77 @@ function play_region() {
     list.forEach(function (e) {
         axis2.addtext(e[1].toString(), e[0], e[1] / all).attr('dy', '-6').attr('font-size', '10');
     });
+}
+// cube 投影
+function cube_proj(d1, d2) {
+    axis3.clear();
+    if (d1 === 'topic' || d2 === 'topic') {
+        axis3.yScale('linear').domain_y(0, 100).note(10, 'y');
+    }
+    else {
+        axis3.yScale('ordinal', [2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019]);
+    }
+    cube.project(d1, d2).displayOn(axis3);
+    if (d1 === 'location' || d2 === 'location') {
+        axis3.note(36, 'x')
+            .text(function (i) {
+            return Province[i];
+        })
+            .attr('font-size', '12')
+            .attr('text-anchor', 'start')
+            .attr('rotate', '90')
+            .css('writing-mode', 'tb')
+            .css('letter-spacing', '5px')
+            .attr('transform', 'translate(5, -6)');
+        if (d1 === 'time' && d2 === 'location' || d1 === 'location' && d2 === 'time') {
+            axis3.note(11, 'y');
+        }
+    }
+}
+// cube 切片
+function cube_slice(p) {
+    axis3.clear();
+    for (var key in p) {
+        if (p.hasOwnProperty(key)) {
+            switch (key.toString()) {
+                case 'topic':
+                    axis3.yScale('ordinal', [2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019]);
+                    cube.slice(p).displayOn(axis3);
+                    axis3.note(36, 'x')
+                        .text(function (i) {
+                        return Province[i];
+                    })
+                        .attr('font-size', '12')
+                        .attr('text-anchor', 'start')
+                        .attr('rotate', '90')
+                        .css('writing-mode', 'tb')
+                        .css('letter-spacing', '5px')
+                        .attr('transform', 'translate(5, -6)');
+                    axis3.note(11, 'y');
+                    return;
+                case 'location':
+                    axis3.yScale('linear').domain_y(0, 100).note(10, 'y');
+                    axis3.xScale('ordinal', [2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019]);
+                    cube.slice(p).displayOn(axis3);
+                    axis3.domain_y(0, 100).note(10, 'y');
+                    axis3.note(11, 'x');
+                    return;
+                case 'time':
+                    axis3.yScale('linear').domain_y(0, 100).note(10, 'y');
+                    cube.slice(p).displayOn(axis3);
+                    axis3.domain_y(0, 100).note(10, 'y');
+                    axis3.note(36, 'x')
+                        .text(function (i) {
+                        return Province[i];
+                    })
+                        .attr('font-size', '12')
+                        .attr('text-anchor', 'start')
+                        .attr('rotate', '90')
+                        .css('writing-mode', 'tb')
+                        .css('letter-spacing', '5px')
+                        .attr('transform', 'translate(5, -6)');
+                    return;
+            }
+        }
+    }
 }

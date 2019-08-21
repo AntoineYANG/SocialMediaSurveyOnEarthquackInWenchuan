@@ -9,7 +9,7 @@
 <body>
     <div id="header" class="__row page">
         <div class="dropdown">
-            <button id="selectedyear" type="button" class="btn dropdown-toggle" id="dropdownMenu1" data-toggle="dropdown"
+            <button id="selectedyear" type="button" class="btn dropdown-toggle" data-toggle="dropdown"
                 style="width: 112px; margin: 1px; padding: 3.9px 24px; position: relative; left: 238px;
                     border: 1px solid black; border-radius: 0px;">
                 2009
@@ -57,7 +57,28 @@
     <div id="container1" class="__row">
         <div class="__col-xs-2 __col-sm-2 __col-md-2 __col-lg-2 __col-stand">
             <div class="left">
-                <div class="title"></div>
+                <div class="title"><p>立方设置</p></div>
+                <div style="padding: 20px;">
+                    <hr style="border-top-color: black;"/>
+                    <div>
+                        <h4>投影</h4>
+                        <input class="proj" type="radio" name="dimension" value="location-time"/>空间 x 时间<br />
+                        <input class="proj" type="radio" name="dimension" value="location-topic" checked/>空间 x 相关度<br />
+                        <input class="proj" type="radio" name="dimension" value="time-topic"/>时间 x 相关度<br />
+                    </div>
+                    <hr style="border-top-color: black;"/>
+                    <div>
+                        <h4>切片</h4>
+                        <p style="margin: 10px 0 4px;">&nbsp;时间&nbsp;</p>
+                        <input class="slice" type="input" name="slice" placeholder="..."/>
+                        <p style="margin: 10px 0 4px;">&nbsp;空间&nbsp;</p>
+                        <input class="slice" type="input" name="slice" placeholder="..."/>
+                        <p style="margin: 10px 0 4px;">相关度</p>
+                        <input class="slice" type="input" name="slice" placeholder="..."/>
+                        <br />
+                        <button type="button" id="slice" name="slice" style="margin: 20px auto 0;">确定</button>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="__col-xs-6 __col-sm-6 __col-md-6 __col-lg-6 __col-stand">
@@ -67,7 +88,29 @@
         </div>
         <div class="__col-xs-4 __col-sm-4 __col-md-4 __col-lg-4 __col-stand">
             <div id="topiccount" class="right">
-                <div class="title" style="width: 735px;"><p>主题统计</p></div>
+                <div class="title" style="width: 735px;">
+                    <p>统计视图</p>
+                    <div class="dropdown">
+                        <button id="selectedact" type="button" class="btn dropdown-toggle" data-toggle="dropdown"
+                            style="width: 112px; margin: 1px; padding: 3.9px 24px; position: relative; left: 380px;
+                                border: 1px solid black; border-radius: 0px;">
+                            热点话题
+                        </button>
+                        <ul id="actlist" class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1"
+                            style="left: 200px; top: 180px; min-width: 140px;">
+                            <li role="presentation" class="dropdown-header">切换</li>
+                            <li role="presentation">
+                                <a role="menuitem" tabindex="-1">热点话题</a>
+                            </li>
+                            <li role="presentation">
+                                <a role="menuitem" tabindex="-1">时间分布</a>
+                            </li>
+                            <li role="presentation">
+                                <a role="menuitem" tabindex="-1">地理分布</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -79,7 +122,7 @@
         </div>
         <div class="__col-xs-6 __col-sm-6 __col-md-6 __col-lg-6 __col-stand">
             <div id="cube" class="center">
-                <div class="title" style="width: 735px;"><p>维度切片</p></div>
+                <div class="title" style="width: 735px;"><p>数据立方</p></div>
             </div>
         </div>
         <div class="__col-xs-4 __col-sm-4 __col-md-4 __col-lg-4 __col-stand">
