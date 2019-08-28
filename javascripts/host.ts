@@ -2,7 +2,7 @@
  * @Author: Antoine YANG 
  * @Date: 2019-08-08 15:15:09 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-08-21 14:39:25
+ * @Last Modified time: 2019-08-28 14:45:52
  */
 
 /// <reference path="./visf.ts" />
@@ -116,7 +116,8 @@ declare function getCloud(year: string, limit: number): void;
         for (let i = 0; i < changed.length; i++) {
             if (changed[i] === Param.year) {
                 // 重绘地图
-                drawColumn(YEAR);
+                // drawColumn(YEAR);
+                updateMap(data_province[YEAR.toString()], YEAR);
                 // 重绘词云
                 getCloud(YEAR.toString(), WORDLIMIT);
             }
@@ -141,15 +142,16 @@ declare function getCloud(year: string, limit: number): void;
     }
 }
 
+
 // 地图
 (function loadChinaMap(): void {
-    $('#map').append('<img src="../data/map.png">');
-    $('#map img').attr('width', '735px');
-    $('#map').append('<svg></svg>');
-    $('#map svg').attr('id', 'map_svg').attr('xmlns', 'http://www.w3.org/2000/svg')
-        .css('position', 'relative').css('top', '-498px').attr('height', '498px').attr('width', '734px');
+    // $('#map').append('<img src="../data/map.png">');
+    // $('#map img').attr('width', '735px');
+    // $('#map').append('<svg></svg>');
+    // $('#map svg').attr('id', 'map_svg').attr('xmlns', 'http://www.w3.org/2000/svg')
+    //     .css('position', 'relative').css('top', '-498px').attr('height', '498px').attr('width', '734px');
 
-    let board = $('#map_svg');
+    // let board = $('#map_svg');
 
     columnSet = [{x: 475, y: 145, name: "黑龙江", data: null},
                 {x: 460, y: 175, name: "吉林", data: null},
@@ -189,24 +191,24 @@ declare function getCloud(year: string, limit: number): void;
     let sheme: Visf.Color.Color = new Visf.Color.Artists.Monet.Monet_bright();
     
     columnSet.forEach(e => {
-        let rect: HTMLElement = jQuery.parseXML(`<rect class="map_rect"\
-            style="fill: ${sheme.at(0)}; stroke: ${sheme.getOutstand()}; stroke-width: 1px; fill-opacity: 0.7;" \
-            xmlns="http://www.w3.org/2000/svg" x="${e.x}" width="16" height="1" y="${e.y}" _y="${e.y}"\
-            id="clm${e.name}"></rect>`).documentElement;
+        // let rect: HTMLElement = jQuery.parseXML(`<rect class="map_rect"\
+        //     style="fill: ${sheme.at(0)}; stroke: ${sheme.getOutstand()}; stroke-width: 1px; fill-opacity: 0.7;" \
+        //     xmlns="http://www.w3.org/2000/svg" x="${e.x}" width="16" height="1" y="${e.y}" _y="${e.y}"\
+        //     id="clm${e.name}"></rect>`).documentElement;
 
-        board.append(rect);
+        // board.append(rect);
 
-        let text: HTMLElement = jQuery.parseXML(`<text class="map_value" style="fill: ${sheme.at(1)};" \
-            xmlns="http://www.w3.org/2000/svg" x="${e.x + 8}" dx="0" y="${e.y - 4}" _y="${e.y - 4}"\
-            id="txt${e.name}">没有数据</text>`).documentElement;
+        // let text: HTMLElement = jQuery.parseXML(`<text class="map_value" style="fill: ${sheme.at(1)};" \
+        //     xmlns="http://www.w3.org/2000/svg" x="${e.x + 8}" dx="0" y="${e.y - 4}" _y="${e.y - 4}"\
+        //     id="txt${e.name}">没有数据</text>`).documentElement;
 
-        board.append(text);
+        // board.append(text);
 
-        let legend: HTMLElement = jQuery.parseXML(`<text class="map_legend" style="fill: ${sheme.at(1)};" \
-            xmlns="http://www.w3.org/2000/svg" x="${e.x + 8}" dx="${e.name.toString().length * -6}" y="${e.y - 22}" _y="${e.y - 22}"\
-            id="lgd${e.name}">${e.name}</text>`).documentElement;
+        // let legend: HTMLElement = jQuery.parseXML(`<text class="map_legend" style="fill: ${sheme.at(1)};" \
+        //     xmlns="http://www.w3.org/2000/svg" x="${e.x + 8}" dx="${e.name.toString().length * -6}" y="${e.y - 22}" _y="${e.y - 22}"\
+        //     id="lgd${e.name}">${e.name}</text>`).documentElement;
 
-        board.append(legend);
+        // board.append(legend);
 
         let datalist: Array<Array<Number>> = [];
         for (let i: number = 2009; i < 2020; i++) {
@@ -228,7 +230,8 @@ declare function getCloud(year: string, limit: number): void;
                     max_province = d[1];
             });
         }
-        drawColumn(YEAR);
+        // drawColumn(YEAR);
+        updateMap(data_province[YEAR.toString()], YEAR);
         drawPolyline();
     });
 

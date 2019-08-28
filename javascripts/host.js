@@ -2,7 +2,7 @@
  * @Author: Antoine YANG
  * @Date: 2019-08-08 15:15:09
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-08-21 14:37:54
+ * @Last Modified time: 2019-08-28 14:45:52
  */
 /// <reference path="./visf.ts" />
 // 全局变量
@@ -108,7 +108,8 @@
         for (var i = 0; i < changed.length; i++) {
             if (changed[i] === Param.year) {
                 // 重绘地图
-                drawColumn(YEAR);
+                // drawColumn(YEAR);
+                updateMap(data_province[YEAR.toString()], YEAR);
                 // 重绘词云
                 getCloud(YEAR.toString(), WORDLIMIT);
             }
@@ -134,12 +135,12 @@
 }
 // 地图
 (function loadChinaMap() {
-    $('#map').append('<img src="../data/map.png">');
-    $('#map img').attr('width', '735px');
-    $('#map').append('<svg></svg>');
-    $('#map svg').attr('id', 'map_svg').attr('xmlns', 'http://www.w3.org/2000/svg')
-        .css('position', 'relative').css('top', '-498px').attr('height', '498px').attr('width', '734px');
-    var board = $('#map_svg');
+    // $('#map').append('<img src="../data/map.png">');
+    // $('#map img').attr('width', '735px');
+    // $('#map').append('<svg></svg>');
+    // $('#map svg').attr('id', 'map_svg').attr('xmlns', 'http://www.w3.org/2000/svg')
+    //     .css('position', 'relative').css('top', '-498px').attr('height', '498px').attr('width', '734px');
+    // let board = $('#map_svg');
     columnSet = [{ x: 475, y: 145, name: "黑龙江", data: null },
         { x: 460, y: 175, name: "吉林", data: null },
         { x: 130, y: 200, name: "新疆", data: null },
@@ -176,12 +177,19 @@
         { x: 650, y: 332, name: "其他", data: null }];
     var sheme = new Visf.Color.Artists.Monet.Monet_bright();
     columnSet.forEach(function (e) {
-        var rect = jQuery.parseXML("<rect class=\"map_rect\"            style=\"fill: " + sheme.at(0) + "; stroke: " + sheme.getOutstand() + "; stroke-width: 1px; fill-opacity: 0.7;\"             xmlns=\"http://www.w3.org/2000/svg\" x=\"" + e.x + "\" width=\"16\" height=\"1\" y=\"" + e.y + "\" _y=\"" + e.y + "\"            id=\"clm" + e.name + "\"></rect>").documentElement;
-        board.append(rect);
-        var text = jQuery.parseXML("<text class=\"map_value\" style=\"fill: " + sheme.at(1) + ";\"             xmlns=\"http://www.w3.org/2000/svg\" x=\"" + (e.x + 8) + "\" dx=\"0\" y=\"" + (e.y - 4) + "\" _y=\"" + (e.y - 4) + "\"            id=\"txt" + e.name + "\">\u6CA1\u6709\u6570\u636E</text>").documentElement;
-        board.append(text);
-        var legend = jQuery.parseXML("<text class=\"map_legend\" style=\"fill: " + sheme.at(1) + ";\"             xmlns=\"http://www.w3.org/2000/svg\" x=\"" + (e.x + 8) + "\" dx=\"" + e.name.toString().length * -6 + "\" y=\"" + (e.y - 22) + "\" _y=\"" + (e.y - 22) + "\"            id=\"lgd" + e.name + "\">" + e.name + "</text>").documentElement;
-        board.append(legend);
+        // let rect: HTMLElement = jQuery.parseXML(`<rect class="map_rect"\
+        //     style="fill: ${sheme.at(0)}; stroke: ${sheme.getOutstand()}; stroke-width: 1px; fill-opacity: 0.7;" \
+        //     xmlns="http://www.w3.org/2000/svg" x="${e.x}" width="16" height="1" y="${e.y}" _y="${e.y}"\
+        //     id="clm${e.name}"></rect>`).documentElement;
+        // board.append(rect);
+        // let text: HTMLElement = jQuery.parseXML(`<text class="map_value" style="fill: ${sheme.at(1)};" \
+        //     xmlns="http://www.w3.org/2000/svg" x="${e.x + 8}" dx="0" y="${e.y - 4}" _y="${e.y - 4}"\
+        //     id="txt${e.name}">没有数据</text>`).documentElement;
+        // board.append(text);
+        // let legend: HTMLElement = jQuery.parseXML(`<text class="map_legend" style="fill: ${sheme.at(1)};" \
+        //     xmlns="http://www.w3.org/2000/svg" x="${e.x + 8}" dx="${e.name.toString().length * -6}" y="${e.y - 22}" _y="${e.y - 22}"\
+        //     id="lgd${e.name}">${e.name}</text>`).documentElement;
+        // board.append(legend);
         var datalist = [];
         for (var i = 2009; i < 2020; i++) {
             datalist.push([i, 0]);
@@ -204,7 +212,8 @@
         for (var p in data_province) {
             _loop_1(p);
         }
-        drawColumn(YEAR);
+        // drawColumn(YEAR);
+        updateMap(data_province[YEAR.toString()], YEAR);
         drawPolyline();
     });
     $.getJSON("../data/topic.json", function (data) {
