@@ -94,7 +94,7 @@ function drawPath(data) {
     let width = proj[data[0]][3];
     let box = [];
     for (let i = 0; i < data[1]; i++) {
-        box.push([lng + zf(Math.random()) * height, lat + zf(Math.random()) * width]);
+        box.push([lng + gaussrand() * height, lat + gaussrand() * width]);
         if (box.length == 1e3) {
             paint(box)
             // setTimeout(paint(box), 200);
@@ -115,7 +115,26 @@ function paint(data) {
     });
 }
 
-function zf(ran) {
-    ran = ran * ran * ran * 0.7 + ran * 0.3;
-    return parseInt(ran * 1e4) % 2 == 0 ? ran : - 1 * ran;
+function zf(ran = Math.random()) {
+    return ran;
+}
+
+var V1, V2, S;
+var phase = 0;
+function gaussrand() { 
+    var X; 
+    if (phase == 0) { 
+        do {
+            let U1 = Math.random(); 
+            let U2 = Math.random(); 
+            V1 = 2 * U1 - 1; 
+            V2 = 2 * U2 - 1; 
+            S = V1 * V1 + V2 * V2; 
+        } while (S >= 1 || S == 0); 
+        X = V1 * Math.sqrt(-2 * Math.log(S) / S); 
+    } else
+        X = V2 * Math.sqrt(-2 * Math.log(S) / S); 
+    phase = 1 - phase;
+    // console.log(X);
+    return X / 3;
 }
