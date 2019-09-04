@@ -25,79 +25,64 @@ L.control.zoom({
 }).addTo(map);
 
 
-// const sw = {
-//     Y2009: 1.5,
-//     Y2010: 0.8,
-//     Y2011: 0.7,
-//     Y2012: 0.7,
-//     Y2013: 0.7,
-//     Y2014: 0.7,
-//     Y2015: 0.7,
-//     Y2016: 0.7,
-//     Y2017: 0.7,
-//     Y2018: 0.7,
-//     Y2019: 1.3
-// };
+var mydata = [];
+
+$.getJSON("../python/data/2009.json", data09 => {
+    mydata.push(data09.data);
+    $.getJSON("../python/data/2010.json", data10 => {
+        mydata.push(data10.data);
+        $.getJSON("../python/data/2011.json", data11 => {
+            mydata.push(data11);
+            $.getJSON("../python/data/2012.json", data12 => {
+                mydata.push(data12);
+                $.getJSON("../python/data/2013.json", data13 => {
+                    mydata.push(data13);
+                    $.getJSON("../python/data/2014.json", data14 => {
+                        mydata.push(data14);
+                        $.getJSON("../python/data/2015.json", data15 => {
+                            mydata.push(data15);
+                            $.getJSON("../python/data/2016.json", data16 => {
+                                mydata.push(data16);
+                                $.getJSON("../python/data/2017.json", data17 => {
+                                    mydata.push(data17);
+                                    $.getJSON("../python/data/2018.json", data18 => {
+                                        mydata.push(data18);
+                                        $.getJSON("../python/data/2019.json", data19 => {
+                                            mydata.push(data19);
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
+});
 
 function updateMap(year) {
     $('.leaflet-zoom-animated g').html("");
-    $.get("../python/data/" + year + ".json", data => {
-        data.forEach(d => {
-            drawPath(d);
-        });
-        $('.leaflet-zoom-animated path').css('stroke-width', 1);
+    if (mydata[year - 2009] === void 0 || mydata[year - 2009].length == 0) {
+        return;
+    }
+    mydata[year - 2009].forEach(d => {
+        drawPath(d);
     });
+    $('.leaflet-zoom-animated path').css('stroke-width', 1);
 }
-
-// lng, lat, height, width
-// const proj = {
-//     黑龙江: [46.6144, 128.3815, 2.2, 2],
-//     吉林: [43.4892, 126.4789, 1.4, 1.7],
-//     新疆: [41.6870, 86.6861, 3.1, 5.4],
-//     辽宁: [41.1204, 122.0808, 1.3, 1.9],
-//     内蒙古: [41.2062, 111.8349, 1, 5.7],
-//     北京: [39.9815, 116.0224, 0.4, 0.3],
-//     天津: [39.2115, 117.3351, 0.3, 0.3],
-//     河北: [39.3444, 115.9045, 2.1, 1.6],
-//     宁夏: [37.2842, 106.1248, 0.9, 0.6],
-//     山东: [36.0840, 117.8245, 1.3, 1.8],
-//     山西: [37.5954, 112.1404, 2.0, 1.4],
-//     青海: [35.6804, 95.2082, 3.1, 5.5],
-//     甘肃: [37.8640, 100.4805, 2.2, 6.2],
-//     陕西: [37.2504, 109.0014, 1.8, 1.3],
-//     河南: [34.3605, 113.2404, 2.0, 2.2],
-//     江苏: [32.9871, 119.5666, 1.7, 1.0],
-//     西藏: [32.1355, 91.1621, 2.8, 4.2],
-//     上海: [31.4751, 121.3804, 0.5, 0.6],
-//     安徽: [31.9504, 117.0048, 1.7, 1.2],
-//     湖北: [31.1605, 112.1548, 1.4, 4.3],
-//     四川: [30.3952, 103.2082, 3.1, 4.6],
-//     重庆: [29.7745, 107.8482, 1.5, 2.2],
-//     浙江: [29.3280, 119.8680, 1.5, 1.4],
-//     江西: [27.4515, 115.4856, 2.3, 1.8],
-//     湖南: [27.7514, 111.8607, 2.3, 1.7],
-//     贵州: [26.3340, 106.8482, 1.8, 2.7],
-//     福建: [25.8846, 118.0045, 1.4, 1.2],
-//     台湾: [23.4065, 120.9456, 1.1, 0.5],
-//     云南: [25.3277, 102.2608, 1.9, 2.2],
-//     广东: [24.0162, 113.9245, 1.6, 2.4],
-//     广西: [23.9945, 109.2514, 1.1, 2.1],
-//     海南: [19.1210, 109.6412, 0.6, 0.7],
-//     香港: [22.7220, 114.3542, 0.4, 0.3],
-//     澳门: [22.1251, 113.1050, 0.3, 0.3]
-// };
 
 function drawPath(data) {
     let lng = data[1];
     let lat = data[2];
-    let height = 0.002;
-    let width = 0.002;
-    paint([lng + gaussrand() * height, lat + gaussrand() * width], data[0]);
+    let height = 0.30;
+    let width = 0.36;
+    paint([lng + gaussrand() * height + 0.035, lat + gaussrand() * width + 0.025], data[0]);
 }
 
 function paint(d, text) {
     L.circle([d[0], d[1]], 10, {
-        color: 'red',
+        color: Math.random() >= 0.6 ? 'red' : Math.random() >= 0.6 ? 'yellow' : 'green',
         fillColor: '#f03',
         fillOpacity: 0.1
     }).addTo(map).bindPopup(text);
@@ -120,5 +105,5 @@ function gaussrand() {
         X = V2 * Math.sqrt(-2 * Math.log(S) / S); 
     phase = 1 - phase;
     // console.log(X);
-    return X / 3;
+    return /*X >= 2 || X <= -2 ? gaussrand() :*/ X;
 }

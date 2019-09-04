@@ -2,7 +2,7 @@
  * @Author: Antoine YANG 
  * @Date: 2019-08-08 15:15:09 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-09-04 10:57:28
+ * @Last Modified time: 2019-09-04 13:21:16
  */
 
 /// <reference path="./visf.ts" />
@@ -270,7 +270,8 @@ function drawPolyline(): void {
     $('#polyline').append('<svg></svg>');
     $('#polyline svg').attr('id', 'poly_svg').attr('xmlns', 'http://www.w3.org/2000/svg')
         .attr('height', '274px').attr('width', '500px');
-    axis = new Visf.Axis.Axis2d($('#poly_svg'), new Visf.Color.Artists.Matisse.Matisse_dark());
+    axis = new Visf.Axis.Axis2d($('#poly_svg'), new Visf.Color.Artists.Matisse.Matisse_bright());
+    axis.set("background", "#eee").set("fill", "#ccc");
     axis.xScale('ordinal', [2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019])
         .domain_y(0, max_province * 1.2).set('margin', '0');
     axis.note(11, 'x');
@@ -287,7 +288,8 @@ function drawTopic(): void {
     $('#topiccount').append('<svg></svg>');
     $('#topiccount svg').attr('id', 'topic_svg').attr('xmlns', 'http://www.w3.org/2000/svg')
         .attr('height', '475px').attr('width', '500px');
-    axis2 = new Visf.Axis.Axis2d($('#topic_svg'), new Visf.Color.Artists.Matisse.Matisse_dark());
+    axis2 = new Visf.Axis.Axis2d($('#topic_svg'), new Visf.Color.Artists.Matisse.Matisse_bright())
+    axis2.set("background", "#eee").set("fill", "#ccc");
     play_theme();
     let sum: Array<number> = [];
     for (let y = 2009; y < 2020; y++) {
@@ -302,7 +304,8 @@ function drawTopic(): void {
     $('#cube').append('<svg></svg>');
     $('#cube svg').attr('id', 'cube_svg').attr('xmlns', 'http://www.w3.org/2000/svg')
         .attr('height', '274px').attr('width', '735px');
-    axis3 = new Visf.Axis.Axis2d($('#cube_svg'), new Visf.Color.Artists.Matisse.Matisse_dark());
+    axis3 = new Visf.Axis.Axis2d($('#cube_svg'), new Visf.Color.Artists.Matisse.Matisse_bright());
+    axis3.set("background", "#eee").set("fill", "#ccc");
     axis3.domain_x(2009, 2020);
     axis3.domain_y(0, 100).set('margin', '0');
     let _l: Array<object> = [];
@@ -353,7 +356,7 @@ function play_theme(): void {
         let color: string = path.css('stroke');
         let rect: JQuery<HTMLElement> = axis2.join('rect', list);
         rect.css('visibility', 'hidden').attr('class', `path${i}`)
-            .css('stroke', (new Visf.Color.Artists.Matisse.Matisse_dark()).getOutstand()).css('fill', color);
+            .css('stroke', (new Visf.Color.Artists.Matisse.Matisse_bright()).getOutstand()).css('fill', color);
         let max: number = list[0][1];
         let idx: number = 0;
         for (let s: number = 1; s < list.length; s++) {
