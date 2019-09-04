@@ -2,7 +2,7 @@
  * @Author: Antoine YANG 
  * @Date: 2019-08-08 15:15:09 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-08-28 14:45:52
+ * @Last Modified time: 2019-09-04 10:57:28
  */
 
 /// <reference path="./visf.ts" />
@@ -117,7 +117,7 @@ declare function getCloud(year: string, limit: number): void;
             if (changed[i] === Param.year) {
                 // 重绘地图
                 // drawColumn(YEAR);
-                updateMap(data_province[YEAR.toString()], YEAR);
+                updateMap(YEAR);
                 // 重绘词云
                 getCloud(YEAR.toString(), WORDLIMIT);
             }
@@ -231,7 +231,7 @@ declare function getCloud(year: string, limit: number): void;
             });
         }
         // drawColumn(YEAR);
-        updateMap(data_province[YEAR.toString()], YEAR);
+        updateMap(YEAR);
         drawPolyline();
     });
 
