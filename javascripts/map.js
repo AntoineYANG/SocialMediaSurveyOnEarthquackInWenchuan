@@ -27,27 +27,27 @@ L.control.zoom({
 
 var mydata = [];
 
-$.getJSON("../python/data/2009.json", data09 => {
-    mydata.push(data09.data);
-    $.getJSON("../python/data/2010.json", data10 => {
-        mydata.push(data10.data);
-        $.getJSON("../python/data/2011.json", data11 => {
+$.getJSON("../python/data/score2009.json", data09 => {
+    mydata.push(data09);
+    $.getJSON("../python/data/score2010.json", data10 => {
+        mydata.push(data10);
+        $.getJSON("../python/data/score2011.json", data11 => {
             mydata.push(data11);
-            $.getJSON("../python/data/2012.json", data12 => {
+            $.getJSON("../python/data/score2012.json", data12 => {
                 mydata.push(data12);
-                $.getJSON("../python/data/2013.json", data13 => {
+                $.getJSON("../python/data/score2013.json", data13 => {
                     mydata.push(data13);
-                    $.getJSON("../python/data/2014.json", data14 => {
+                    $.getJSON("../python/data/score2014.json", data14 => {
                         mydata.push(data14);
-                        $.getJSON("../python/data/2015.json", data15 => {
+                        $.getJSON("../python/data/score2015.json", data15 => {
                             mydata.push(data15);
-                            $.getJSON("../python/data/2016.json", data16 => {
+                            $.getJSON("../python/data/score2016.json", data16 => {
                                 mydata.push(data16);
-                                $.getJSON("../python/data/2017.json", data17 => {
+                                $.getJSON("../python/data/score2017.json", data17 => {
                                     mydata.push(data17);
-                                    $.getJSON("../python/data/2018.json", data18 => {
+                                    $.getJSON("../python/data/score2018.json", data18 => {
                                         mydata.push(data18);
-                                        $.getJSON("../python/data/2019.json", data19 => {
+                                        $.getJSON("../python/data/score2019.json", data19 => {
                                             mydata.push(data19);
                                         });
                                     });
@@ -77,12 +77,12 @@ function drawPath(data) {
     let lat = data[2];
     let height = 0.30;
     let width = 0.36;
-    paint([lng + gaussrand() * height + 0.035, lat + gaussrand() * width + 0.025], data[0]);
+    paint([lng + gaussrand() * height + 0.035, lat + gaussrand() * width + 0.025], data[0], data[3]);
 }
 
-function paint(d, text) {
+function paint(d, text, value) {
     L.circle([d[0], d[1]], 10, {
-        color: Math.random() >= 0.6 ? 'red' : Math.random() >= 0.6 ? 'yellow' : 'green',
+        color: value <= 0.3 ? 'green' : value >= 0.99 ? 'red' : 'orange',
         fillColor: '#f03',
         fillOpacity: 0.1
     }).addTo(map).bindPopup(text);
